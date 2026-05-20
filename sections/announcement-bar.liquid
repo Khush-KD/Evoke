@@ -72,10 +72,15 @@
     width: 100%;
   }
 
-  /* Flip-through animations */
+  /* Disable Dawn's native horizontal transition to prevent clashing animations */
+  #utility-bar-{{ section.id }} .announcement-bar-slider .slider {
+    scroll-behavior: auto !important;
+  }
+
+  /* 3D Container Setup */
   #utility-bar-{{ section.id }} .announcement-bar-slider {
     overflow: hidden;
-    perspective: 400px;
+    perspective: 1000px;
     width: 100%;
   }
 
@@ -88,50 +93,42 @@
   #utility-bar-{{ section.id }} .announcement-bar-slider .slider__slide {
     position: relative;
     pointer-events: none;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
   }
 
   #utility-bar-{{ section.id }} .announcement-bar-slider .slider__slide[aria-hidden="false"] {
     pointer-events: auto;
   }
 
+  /* Ultra-Premium Hardware-Accelerated 3D Flip transitions */
   #utility-bar-{{ section.id }} .announcement-bar__message {
     display: inline-block;
-    will-change: transform, opacity, filter;
-    transform-origin: center center;
+    will-change: transform, opacity;
+    transform-origin: 50% 50%;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     margin: 0;
     line-height: 1.2;
+    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Outgoing transition animation styling */
-  #utility-bar-{{ section.id }} .announcement-bar-slider--fade-out-next .announcement-bar__message,
-  #utility-bar-{{ section.id }} .announcement-bar-slider--fade-out-previous .announcement-bar__message {
-    animation: ab-exit 420ms cubic-bezier(.4, 0, .6, 1) both;
+  /* Outgoing Slide (Flipped upwards and faded out gracefully) */
+  #utility-bar-{{ section.id }} .slider__slide[aria-hidden="true"] .announcement-bar__message {
+    opacity: 0;
+    transform: rotateX(75deg) translate3d(0, -12px, -30px) scale(0.95);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Incoming transition animation styling */
-  #utility-bar-{{ section.id }} .announcement-bar-slider--fade-in-next .announcement-bar__message,
-  #utility-bar-{{ section.id }} .announcement-bar-slider--fade-in-previous .announcement-bar__message,
-  #utility-bar-{{ section.id }} .slider__slide[aria-hidden="false"] .announcement-bar__message,
-  #utility-bar-{{ section.id }} .slider__slide.is-active .announcement-bar__message,
-  #utility-bar-{{ section.id }} .slider__slide.active .announcement-bar__message {
-    animation: ab-enter 500ms cubic-bezier(.16, 1, .3, 1) both;
-  }
-
-  @keyframes ab-exit {
-    0%   { opacity: 1;  transform: translateY(0)     rotateX(0deg);   filter: blur(0px); }
-    60%  { opacity: .4; transform: translateY(-4px)  rotateX(30deg);  filter: blur(1px); }
-    100% { opacity: 0;  transform: translateY(-10px) rotateX(60deg);  filter: blur(3px); }
-  }
-
-  @keyframes ab-enter {
-    0%   { opacity: 0;  transform: translateY(14px)  rotateX(-50deg); filter: blur(3px); }
-    55%  { opacity: 1;  transform: translateY(-2px)  rotateX(4deg);   filter: blur(0px); }
-    75%  {              transform: translateY(1px)   rotateX(-1deg); }
-    100% { opacity: 1;  transform: translateY(0)     rotateX(0deg);   filter: blur(0px); }
+  /* Incoming Slide (Unfolded smoothly from below) */
+  #utility-bar-{{ section.id }} .slider__slide[aria-hidden="false"] .announcement-bar__message {
+    opacity: 1;
+    transform: rotateX(0deg) translate3d(0, 0, 0) scale(1);
   }
 
   #utility-bar-{{ section.id }} .announcement-bar__link {
@@ -316,60 +313,6 @@
 
   </div>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const utilityBar = document.querySelector('#utility-bar-{{ section.id }}');
-    if (!utilityBar) return;
-
-    const sliderContainer = utilityBar.querySelector('.announcement-bar-slider');
-    const slides = utilityBar.querySelectorAll('.slider__slide');
-    if (!sliderContainer || slides.length <= 1) return;
-
-    let prevActiveIndex = Array.from(slides).findIndex(slide => slide.getAttribute('aria-hidden') === 'false');
-    if (prevActiveIndex === -1) prevActiveIndex = 0;
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
-          const currentSlide = mutation.target;
-          const isHidden = currentSlide.getAttribute('aria-hidden') === 'true';
-
-          if (!isHidden) {
-            const slidesArray = Array.from(slides);
-            const currentIdx = slidesArray.indexOf(currentSlide);
-
-            if (currentIdx !== prevActiveIndex) {
-              const isNext = currentIdx > prevActiveIndex || (currentIdx === 0 && prevActiveIndex === slidesArray.length - 1);
-              const direction = isNext ? 'next' : 'previous';
-
-              // Reset transition states on container to trigger clean CSS keyframes
-              sliderContainer.classList.remove(
-                'announcement-bar-slider--fade-in-next',
-                'announcement-bar-slider--fade-in-previous',
-                'announcement-bar-slider--fade-out-next',
-                'announcement-bar-slider--fade-out-previous'
-              );
-
-              sliderContainer.classList.add(`announcement-bar-slider--fade-out-${direction}`);
-              
-              // Force layout reflow to restart CSS animations smoothly
-              void sliderContainer.offsetWidth;
-
-              sliderContainer.classList.add(`announcement-bar-slider--fade-in-${direction}`);
-
-              prevActiveIndex = currentIdx;
-            }
-          }
-        }
-      });
-    });
-
-    slides.forEach((slide) => {
-      observer.observe(slide, { attributes: true });
-    });
-  });
-</script>
 
 {% schema %}
 {
