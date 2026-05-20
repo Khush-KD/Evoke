@@ -11,6 +11,14 @@
   <link rel="stylesheet" href="{{ 'component-mega-menu.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
+{%- liquid
+  assign enable_transparent = false
+  if section.settings.enable_transparent_header
+    if section.settings.transparent_header_homepage_only == false or request.page_type == 'index'
+      assign enable_transparent = true
+    endif
+  endif
+-%}
 
 <style>
   header-drawer {
@@ -70,6 +78,26 @@
       padding-top: 0.5rem;
     }
   }
+
+  /* Logo swap logic */
+  .header__heading-logo--transparent {
+    display: none !important;
+  }
+
+  {%- if enable_transparent and section.settings.transparent_logo != blank -%}
+    .section-header:not(.scrolled-past-header) .header__heading-logo--default {
+      display: none !important;
+    }
+    .section-header:not(.scrolled-past-header) .header__heading-logo--transparent {
+      display: block !important;
+    }
+    .scrolled-past-header .header__heading-logo--transparent {
+      display: none !important;
+    }
+    .scrolled-past-header .header__heading-logo--default {
+      display: block !important;
+    }
+  {%- endif -%}
 </style>
 
 {%- style -%}
@@ -81,6 +109,49 @@
     position: sticky; /* This is for fixing a Safari z-index issue. PR #2147 */
     margin-bottom: {{ section.settings.margin_bottom | times: 0.75 | round: 0 }}px;
   }
+
+  /* Smooth color scheme state transition */
+  .header-wrapper {
+    transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  {%- if enable_transparent -%}
+    .section-header {
+      position: absolute !important;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 101;
+      margin-bottom: 0 !important;
+    }
+
+    /* Top state transparent defaults */
+    .section-header:not(.scrolled-past-header) .header-wrapper--transparent {
+      background: transparent !important;
+      background-image: none !important;
+      border-bottom: none !important;
+      box-shadow: none !important;
+    }
+
+    {%- if section.settings.keep_transparent_on_scroll -%}
+      /* Modern high-end glassmorphism styling when transparent on scroll */
+      .scrolled-past-header .header-wrapper--transparent {
+        background: rgba(var(--color-background), 0.7) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+        border-bottom: 1px solid rgba(var(--color-foreground), 0.08) !important;
+      }
+    {%- else -%}
+      /* Transition cleanly back to theme solid color scheme */
+      .scrolled-past-header .header-wrapper--transparent {
+        border-bottom: 1px solid rgba(var(--color-foreground), 0.08) !important;
+      }
+    {%- endif -%}
+  {%- endif -%}
 
   @media screen and (min-width: 750px) {
     .section-header {
@@ -114,7 +185,16 @@
   endif
 %}
 
-<{{ header_tag }} {% if header_tag == 'sticky-header' %}data-sticky-type="{{ section.settings.sticky_header_type }}"{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
+<{{ header_tag }} 
+  {% if header_tag == 'sticky-header' %}
+    data-sticky-type="{{ section.settings.sticky_header_type }}"
+    {% if enable_transparent %}
+      data-transparent="true" 
+      data-keep-transparent="{{ section.settings.keep_transparent_on_scroll }}"
+    {% endif %}
+  {% endif %} 
+  class="header-wrapper gradient {% if enable_transparent %}header-wrapper--transparent color-{{ section.settings.transparent_color_scheme }}{% else %}color-{{ section.settings.color_scheme }}{% endif %}{% if section.settings.show_line_separator and enable_transparent == false %} header-wrapper--border-bottom{% endif %}"
+>
   {%- liquid
     assign social_links = false
     assign localization_forms = false
@@ -143,21 +223,37 @@
         <h1 class="header__heading">
       {%- endif -%}
           <a href="{{ routes.root_url }}" class="header__heading-link link link--text focus-inset">
-            {%- if settings.logo != blank -%}
+            {%- if settings.logo != blank or section.settings.transparent_logo != blank -%}
               <div class="header__heading-logo-wrapper">
-                {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
-                {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
-                {% capture sizes %}(max-width: {{ settings.logo_width | times: 2 }}px) 50vw, {{ settings.logo_width }}px{% endcapture %}
-                {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
-                {{ settings.logo | image_url: width: 600 | image_tag:
-                  class: 'header__heading-logo motion-reduce',
-                  widths: widths,
-                  height: logo_height,
-                  width: settings.logo_width,
-                  alt: logo_alt,
-                  sizes: sizes,
-                  preload: true
-                }}
+                {%- if settings.logo != blank -%}
+                  {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
+                  {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
+                  {% capture sizes %}(max-width: {{ settings.logo_width | times: 2 }}px) 50vw, {{ settings.logo_width }}px{% endcapture %}
+                  {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
+                  {{ settings.logo | image_url: width: 600 | image_tag:
+                    class: 'header__heading-logo header__heading-logo--default motion-reduce',
+                    widths: widths,
+                    height: logo_height,
+                    width: settings.logo_width,
+                    alt: logo_alt,
+                    sizes: sizes,
+                    preload: true
+                  }}
+                {%- endif -%}
+
+                {%- if section.settings.transparent_logo != blank -%}
+                  {%- assign trans_logo_alt = section.settings.transparent_logo.alt | default: shop.name | escape -%}
+                  {%- assign trans_logo_height = settings.logo_width | divided_by: section.settings.transparent_logo.aspect_ratio -%}
+                  {{ section.settings.transparent_logo | image_url: width: 600 | image_tag:
+                    class: 'header__heading-logo header__heading-logo--transparent motion-reduce',
+                    widths: widths,
+                    height: trans_logo_height,
+                    width: settings.logo_width,
+                    alt: trans_logo_alt,
+                    sizes: sizes,
+                    preload: true
+                  }}
+                {%- endif -%}
               </div>
             {%- else -%}
               <span class="h2">{{ shop.name }}</span>
@@ -183,21 +279,37 @@
         <h1 class="header__heading">
       {%- endif -%}
           <a href="{{ routes.root_url }}" class="header__heading-link link link--text focus-inset">
-            {%- if settings.logo != blank -%}
+            {%- if settings.logo != blank or section.settings.transparent_logo != blank -%}
               <div class="header__heading-logo-wrapper">
-                {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
-                {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
-                {% capture sizes %}(min-width: 750px) {{ settings.logo_width }}px, 50vw{% endcapture %}
-                {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
-                {{ settings.logo | image_url: width: 600 | image_tag:
-                  class: 'header__heading-logo',
-                  widths: widths,
-                  height: logo_height,
-                  width: settings.logo_width,
-                  alt: logo_alt,
-                  sizes: sizes,
-                  preload: true
-                }}
+                {%- if settings.logo != blank -%}
+                  {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
+                  {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
+                  {% capture sizes %}(min-width: 750px) {{ settings.logo_width }}px, 50vw{% endcapture %}
+                  {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
+                  {{ settings.logo | image_url: width: 600 | image_tag:
+                    class: 'header__heading-logo header__heading-logo--default motion-reduce',
+                    widths: widths,
+                    height: logo_height,
+                    width: settings.logo_width,
+                    alt: logo_alt,
+                    sizes: sizes,
+                    preload: true
+                  }}
+                {%- endif -%}
+
+                {%- if section.settings.transparent_logo != blank -%}
+                  {%- assign trans_logo_alt = section.settings.transparent_logo.alt | default: shop.name | escape -%}
+                  {%- assign trans_logo_height = settings.logo_width | divided_by: section.settings.transparent_logo.aspect_ratio -%}
+                  {{ section.settings.transparent_logo | image_url: width: 600 | image_tag:
+                    class: 'header__heading-logo header__heading-logo--transparent motion-reduce',
+                    widths: widths,
+                    height: trans_logo_height,
+                    width: settings.logo_width,
+                    alt: trans_logo_alt,
+                    sizes: sizes,
+                    preload: true
+                  }}
+                {%- endif -%}
               </div>
             {%- else -%}
               <span class="h2">{{ shop.name }}</span>
@@ -302,6 +414,14 @@
 
     connectedCallback() {
       this.header = document.querySelector('.section-header');
+      this.headerWrapper = this.querySelector('.header-wrapper');
+      
+      // Transparent header details
+      this.isTransparent = this.headerWrapper.classList.contains('header-wrapper--transparent');
+      this.keepTransparentOnScroll = this.getAttribute('data-keep-transparent') === 'true';
+      this.solidSchemeClass = 'color-{{ section.settings.color_scheme }}';
+      this.transparentSchemeClass = 'color-{{ section.settings.transparent_color_scheme }}';
+
       this.headerIsAlwaysSticky = this.getAttribute('data-sticky-type') === 'always' || this.getAttribute('data-sticky-type') === 'reduce-logo-size';
       this.headerBounds = {};
 
@@ -349,25 +469,42 @@
 
       if (this.predictiveSearch && this.predictiveSearch.isOpen) return;
 
-      if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
-        this.header.classList.add('scrolled-past-header');
-        if (this.preventHide) return;
-        requestAnimationFrame(this.hide.bind(this));
-      } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
-        this.header.classList.add('scrolled-past-header');
-        if (!this.preventReveal) {
-          requestAnimationFrame(this.reveal.bind(this));
-        } else {
-          window.clearTimeout(this.isScrolling);
+      const isScrolledPast = scrollTop > this.headerBounds.bottom;
 
-          this.isScrolling = setTimeout(() => {
-            this.preventReveal = false;
-          }, 66);
+      if (isScrolledPast) {
+        this.header.classList.add('scrolled-past-header');
+        
+        // Handle transition to solid colors on scroll (if not keeping transparent state)
+        if (this.isTransparent && !this.keepTransparentOnScroll) {
+          this.headerWrapper.classList.remove(this.transparentSchemeClass);
+          this.headerWrapper.classList.add(this.solidSchemeClass);
+        }
 
+        if (scrollTop > this.currentScrollTop) {
+          if (this.preventHide) return;
           requestAnimationFrame(this.hide.bind(this));
+        } else {
+          if (!this.preventReveal) {
+            requestAnimationFrame(this.reveal.bind(this));
+          } else {
+            window.clearTimeout(this.isScrolling);
+
+            this.isScrolling = setTimeout(() => {
+              this.preventReveal = false;
+            }, 66);
+
+            requestAnimationFrame(this.hide.bind(this));
+          }
         }
       } else if (scrollTop <= this.headerBounds.top) {
         this.header.classList.remove('scrolled-past-header');
+        
+        // Revert cleanly back to original transparent color scheme at the top
+        if (this.isTransparent && !this.keepTransparentOnScroll) {
+          this.headerWrapper.classList.remove(this.solidSchemeClass);
+          this.headerWrapper.classList.add(this.transparentSchemeClass);
+        }
+
         requestAnimationFrame(this.reset.bind(this));
       }
 
@@ -548,6 +685,43 @@
       "id": "show_line_separator",
       "default": true,
       "label": "t:sections.header.settings.show_line_separator.label"
+    },
+    {
+      "type": "header",
+      "content": "Transparent Header Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header",
+      "default": false,
+      "label": "Enable transparent header",
+      "info": "Overlays the header on top of the first section (e.g. slideshow, video, hero banner)."
+    },
+    {
+      "type": "checkbox",
+      "id": "transparent_header_homepage_only",
+      "default": true,
+      "label": "Only transparent on homepage"
+    },
+    {
+      "type": "checkbox",
+      "id": "keep_transparent_on_scroll",
+      "default": false,
+      "label": "Keep transparent on scroll",
+      "info": "Applies a premium glassmorphism blur backdrop instead of transitioning back to the solid background color scheme."
+    },
+    {
+      "type": "image_picker",
+      "id": "transparent_logo",
+      "label": "Transparent header logo",
+      "info": "Alternative logo (e.g. white or custom colored) specifically loaded when the header transparent overlay is active."
+    },
+    {
+      "type": "color_scheme",
+      "id": "transparent_color_scheme",
+      "label": "Transparent color scheme",
+      "default": "scheme-4",
+      "info": "Text, icon and navigation contrast colors loaded while header is transparent."
     },
     {
       "type": "header",
