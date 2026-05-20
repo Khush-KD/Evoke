@@ -25,7 +25,7 @@
   }
   .announcement-bar-section {
     position: relative;
-    z-index: 1; /* below the mini cart overlay */
+    z-index: 1; /* Below the mini cart overlay */
   }
   #utility-bar-{{ section.id }} .utility-bar__inner {
     display: grid;
@@ -58,6 +58,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
   }
   #utility-bar-{{ section.id }} .utility-bar__right {
     display: flex;
@@ -65,11 +66,17 @@
     justify-content: flex-end;
   }
 
-  /* ?? Announcement bar: flip-through animation ?? */
+  /* Announcement Bar Slide Container Rules */
+  #utility-bar-{{ section.id }} .announcement-bar {
+    position: relative;
+    width: 100%;
+  }
 
+  /* Flip-through animations */
   #utility-bar-{{ section.id }} .announcement-bar-slider {
     overflow: hidden;
     perspective: 400px;
+    width: 100%;
   }
 
   #utility-bar-{{ section.id }} .announcement-bar-slider .slider {
@@ -95,20 +102,23 @@
     transform-origin: center center;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    margin: 0;
+    line-height: 1.2;
   }
 
-  /* outgoing: fold up and blur away */
+  /* Outgoing transition animation styling */
   #utility-bar-{{ section.id }} .announcement-bar-slider--fade-out-next .announcement-bar__message,
-  #utility-bar-{{ section.id }} .announcement-bar-slider--fade-out-previous .announcement-bar__message {
+  #utility-bar-{{ section.id }} .announcement-bar-slider--fade-out-previous .announcement-bar__message,
+  #utility-bar-{{ section.id }} .slider__slide[aria-hidden="true"] .announcement-bar__message {
     animation: ab-exit 420ms cubic-bezier(.4, 0, .6, 1) both;
   }
 
-  /* incoming: unfold from below with spring settle */
+  /* Incoming transition animation styling */
   #utility-bar-{{ section.id }} .announcement-bar-slider--fade-in-next .announcement-bar__message,
   #utility-bar-{{ section.id }} .announcement-bar-slider--fade-in-previous .announcement-bar__message,
+  #utility-bar-{{ section.id }} .slider__slide[aria-hidden="false"] .announcement-bar__message,
   #utility-bar-{{ section.id }} .slider__slide.is-active .announcement-bar__message,
-  #utility-bar-{{ section.id }} .slider__slide.active .announcement-bar__message,
-  #utility-bar-{{ section.id }} .slider__slide.slick-active .announcement-bar__message {
+  #utility-bar-{{ section.id }} .slider__slide.active .announcement-bar__message {
     animation: ab-enter 500ms cubic-bezier(.16, 1, .3, 1) both;
   }
 
@@ -125,6 +135,22 @@
     100% { opacity: 1;  transform: translateY(0)     rotateX(0deg);   filter: blur(0px); }
   }
 
+  #utility-bar-{{ section.id }} .announcement-bar__link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    transition: transform 0.20s ease-in-out;
+  }
+
+  #utility-bar-{{ section.id }} .announcement-bar__link:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
   {%- if request.design_mode -%}
   #utility-bar-{{ section.id }} .announcement-bar-slider .slider__slide[aria-hidden='true'] {
     visibility: hidden;
@@ -138,7 +164,7 @@
 >
   <div class="{% if section.settings.section_width == 'page' %}page-width{% endif %} utility-bar__inner">
 
-    <!-- LEFT: social icons (hidden on mobile) -->
+    <!-- LEFT: Social Icons -->
     <div class="utility-bar__left">
       {%- if section.settings.show_social and social_icons -%}
         <span class="small-hide medium-hide">
@@ -147,7 +173,7 @@
       {%- endif -%}
     </div>
 
-    <!-- CENTER: announcement bar -->
+    <!-- CENTER: Announcements -->
     <div class="utility-bar__center">
       {%- if section.blocks.size == 1 -%}
         <div
@@ -158,22 +184,20 @@
         >
           {%- assign b = section.blocks.first.settings -%}
           {%- if b.text != blank -%}
-            <p class="announcement-bar__message"
-              style="
-                font-size: {{ b.font_size }};
-                font-weight: {{ b.font_weight }};
-                letter-spacing: {% if b.letter_spacing == 'tight' %}-0.03em
-                  {% elsif b.letter_spacing == 'loose' %}0.08em
-                  {% else %}normal{% endif %};
-                text-transform: {{ b.text_transform }};
-              "
-            >
-              {{ b.text }}
-            </p>
             {%- if b.link != blank -%}
-              <a href="{{ b.link }}"
-                 class="announcement-bar__link--overlay"
-                 aria-label="{{ b.text | strip_html }}">
+              <a href="{{ b.link }}" class="announcement-bar__link focus-inset" aria-label="{{ b.text | strip_html }}">
+            {%- endif -%}
+              <p class="announcement-bar__message"
+                style="
+                  font-size: {{ b.font_size }};
+                  font-weight: {{ b.font_weight }};
+                  letter-spacing: {% if b.letter_spacing == 'tight' %}-0.03em{% elsif b.letter_spacing == 'loose' %}0.08em{% else %}normal{% endif %};
+                  text-transform: {{ b.text_transform }};
+                "
+              >
+                {{ b.text | escape }}
+              </p>
+            {%- if b.link != blank -%}
               </a>
             {%- endif -%}
           {%- endif -%}
@@ -215,42 +239,42 @@
                   {{ block.shopify_attributes }}
                 >
                   {%- if b.text != blank -%}
-                    <p class="announcement-bar__message"
-                      style="
-                        font-size: {{ b.font_size }};
-                        font-weight: {{ b.font_weight }};
-                        letter-spacing: {% if b.letter_spacing == 'tight' %}-0.03em
-                        {% elsif b.letter_spacing == 'loose' %}0.08em
-                        {% else %}normal{% endif %};
-                        text-transform: {{ b.text_transform }};
-                      "
-                    >
-                      {{ b.text }}
-                    </p>
                     {%- if b.link != blank -%}
-                      <a
-                        href="{{ b.link }}"
-                        class="announcement-bar__link--overlay"
-                        aria-label="{{ b.text | strip_html }}"
-                        tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
-                      ></a>
+                      <a href="{{ b.link }}" 
+                         class="announcement-bar__link focus-inset" 
+                         aria-label="{{ b.text | strip_html }}"
+                         tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+                      >
+                    {%- endif -%}
+                      <p class="announcement-bar__message"
+                        style="
+                          font-size: {{ b.font_size }};
+                          font-weight: {{ b.font_weight }};
+                          letter-spacing: {% if b.letter_spacing == 'tight' %}-0.03em{% elsif b.letter_spacing == 'loose' %}0.08em{% else %}normal{% endif %};
+                          text-transform: {{ b.text_transform }};
+                        "
+                      >
+                        {{ b.text | escape }}
+                      </p>
+                    {%- if b.link != blank -%}
+                      </a>
                     {%- endif -%}
                   {%- endif -%}
                 </div>
               {%- endfor -%}
             </div>
-                <button
-                  type="button"
-                  class="slider-button slider-button--next{% unless section.settings.show_slider_buttons %} hidden{% endunless %}"
-                  name="next"
-                  aria-label="{{ 'sections.announcements.next_announcement' | t }}"
-                  aria-controls="Slider-{{ section.id }}"
-                  {% unless section.settings.show_slider_buttons %}aria-hidden="true" tabindex="-1"{% endunless %}
-                >
-                  <span class="svg-wrapper">
-                    {{- 'icon-caret.svg' | inline_asset_content -}}
-                  </span>
-                </button>
+            <button
+              type="button"
+              class="slider-button slider-button--next{% unless section.settings.show_slider_buttons %} hidden{% endunless %}"
+              name="next"
+              aria-label="{{ 'sections.announcements.next_announcement' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+              {% unless section.settings.show_slider_buttons %}aria-hidden="true" tabindex="-1"{% endunless %}
+            >
+              <span class="svg-wrapper">
+                {{- 'icon-caret.svg' | inline_asset_content -}}
+              </span>
+            </button>
           </div>
         </slideshow-component>
         {%- if request.design_mode -%}
@@ -264,7 +288,7 @@
       {%- endif -%}
     </div>
 
-    <!-- RIGHT: country / language selectors -->
+    <!-- RIGHT: Country/Language Localization selectors -->
     <div class="utility-bar__right">
       <div class="localization-wrapper">
         {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
@@ -305,15 +329,15 @@
   "settings": [
     {
       "type": "header",
-      "content": "Appearance"
+      "content": "t:sections.announcement-bar.settings.header_appearance.content"
     },
     {
       "type": "select",
       "id": "section_width",
-      "label": "Section width",
+      "label": "t:sections.announcement-bar.settings.section_width.label",
       "options": [
-        { "value": "page", "label": "Page" },
-        { "value": "full", "label": "Full" }
+        { "value": "page", "label": "t:sections.announcement-bar.settings.section_width.options.page" },
+        { "value": "full", "label": "t:sections.announcement-bar.settings.section_width.options.full" }
       ],
       "default": "page"
     },
@@ -324,8 +348,8 @@
       "max": 24,
       "step": 2,
       "unit": "px",
-      "label": "Vertical padding",
-      "default": 0
+      "label": "t:sections.announcement-bar.settings.bar_padding.label",
+      "default": 10
     },
     {
       "type": "color_scheme",
@@ -374,7 +398,7 @@
       "type": "checkbox",
       "id": "show_slider_buttons",
       "default": true,
-      "label": "Show announcement slider buttons"
+      "label": "t:sections.announcement-bar.settings.show_slider_buttons.label"
     },
     {
       "type": "checkbox",
@@ -406,6 +430,59 @@
           "type": "url",
           "id": "link",
           "label": "t:sections.announcement-bar.blocks.announcement.settings.link.label"
+        },
+        {
+          "type": "header",
+          "content": "t:sections.announcement-bar.blocks.announcement.settings.header_typography.content"
+        },
+        {
+          "type": "select",
+          "id": "font_size",
+          "label": "t:sections.announcement-bar.blocks.announcement.settings.font_size.label",
+          "options": [
+            { "value": "1.0rem", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_size.options.xs" },
+            { "value": "1.2rem", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_size.options.sm" },
+            { "value": "1.3rem", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_size.options.md" },
+            { "value": "1.4rem", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_size.options.lg" },
+            { "value": "1.6rem", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_size.options.xl" }
+          ],
+          "default": "1.3rem"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "t:sections.announcement-bar.blocks.announcement.settings.font_weight.label",
+          "options": [
+            { "value": "300", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_weight.options.light" },
+            { "value": "400", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_weight.options.normal" },
+            { "value": "500", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_weight.options.medium" },
+            { "value": "600", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_weight.options.semibold" },
+            { "value": "700", "label": "t:sections.announcement-bar.blocks.announcement.settings.font_weight.options.bold" }
+          ],
+          "default": "400"
+        },
+        {
+          "type": "select",
+          "id": "letter_spacing",
+          "label": "t:sections.announcement-bar.blocks.announcement.settings.letter_spacing.label",
+          "options": [
+            { "value": "tight", "label": "t:sections.announcement-bar.blocks.announcement.settings.letter_spacing.options.tight" },
+            { "value": "normal", "label": "t:sections.announcement-bar.blocks.announcement.settings.letter_spacing.options.normal" },
+            { "value": "loose", "label": "t:sections.announcement-bar.blocks.announcement.settings.letter_spacing.options.loose" }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "select",
+          "id": "text_transform",
+          "label": "t:sections.announcement-bar.blocks.announcement.settings.text_transform.label",
+          "options": [
+            { "value": "none", "label": "t:sections.announcement-bar.blocks.announcement.settings.text_transform.options.none" },
+            { "value": "uppercase", "label": "t:sections.announcement-bar.blocks.announcement.settings.text_transform.options.uppercase" },
+            { "value": "lowercase", "label": "t:sections.announcement-bar.blocks.announcement.settings.text_transform.options.lowercase" },
+            { "value": "capitalize", "label": "t:sections.announcement-bar.blocks.announcement.settings.text_transform.options.capitalize" }
+          ],
+          "default": "uppercase"
         }
       ]
     }
