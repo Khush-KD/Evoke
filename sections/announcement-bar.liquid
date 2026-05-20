@@ -108,8 +108,7 @@
 
   /* Outgoing transition animation styling */
   #utility-bar-{{ section.id }} .announcement-bar-slider--fade-out-next .announcement-bar__message,
-  #utility-bar-{{ section.id }} .announcement-bar-slider--fade-out-previous .announcement-bar__message,
-  #utility-bar-{{ section.id }} .slider__slide[aria-hidden="true"] .announcement-bar__message {
+  #utility-bar-{{ section.id }} .announcement-bar-slider--fade-out-previous .announcement-bar__message {
     animation: ab-exit 420ms cubic-bezier(.4, 0, .6, 1) both;
   }
 
@@ -317,6 +316,60 @@
 
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const utilityBar = document.querySelector('#utility-bar-{{ section.id }}');
+    if (!utilityBar) return;
+
+    const sliderContainer = utilityBar.querySelector('.announcement-bar-slider');
+    const slides = utilityBar.querySelectorAll('.slider__slide');
+    if (!sliderContainer || slides.length <= 1) return;
+
+    let prevActiveIndex = Array.from(slides).findIndex(slide => slide.getAttribute('aria-hidden') === 'false');
+    if (prevActiveIndex === -1) prevActiveIndex = 0;
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+          const currentSlide = mutation.target;
+          const isHidden = currentSlide.getAttribute('aria-hidden') === 'true';
+
+          if (!isHidden) {
+            const slidesArray = Array.from(slides);
+            const currentIdx = slidesArray.indexOf(currentSlide);
+
+            if (currentIdx !== prevActiveIndex) {
+              const isNext = currentIdx > prevActiveIndex || (currentIdx === 0 && prevActiveIndex === slidesArray.length - 1);
+              const direction = isNext ? 'next' : 'previous';
+
+              // Reset transition states on container to trigger clean CSS keyframes
+              sliderContainer.classList.remove(
+                'announcement-bar-slider--fade-in-next',
+                'announcement-bar-slider--fade-in-previous',
+                'announcement-bar-slider--fade-out-next',
+                'announcement-bar-slider--fade-out-previous'
+              );
+
+              sliderContainer.classList.add(`announcement-bar-slider--fade-out-${direction}`);
+              
+              // Force layout reflow to restart CSS animations smoothly
+              void sliderContainer.offsetWidth;
+
+              sliderContainer.classList.add(`announcement-bar-slider--fade-in-${direction}`);
+
+              prevActiveIndex = currentIdx;
+            }
+          }
+        }
+      });
+    });
+
+    slides.forEach((slide) => {
+      observer.observe(slide, { attributes: true });
+    });
+  });
+</script>
 
 {% schema %}
 {
