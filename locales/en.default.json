@@ -276,11 +276,120 @@
         },
 
         "header": {
-            "announcement": "Announcement",
-            "menu": "Menu",
-            "cart_count": {
-                "one": "{{ count }} item",
-                "other": "{{ count }} items"
+            "settings": {
+                "logo_header": {
+                    "content": "Logo Layout"
+                },
+                "navigation_header": {
+                    "content": "Navigation"
+                },
+                "mobile_nav_style": {
+                    "label": "Mobile nav style",
+                    "options__1": {
+                        "label": "Slide-in drawer"
+                    },
+                    "options__2": {
+                        "label": "Full-screen overlay"
+                    }
+                },
+                "sticky_header": {
+                    "content": "Sticky & Scroll Behavior"
+                },
+                "enable_transparent_header": {
+                    "label": "Transparent header at page top",
+                    "info": "Header becomes transparent when page is at the top, turns solid on any scroll down."
+                },
+                "transparent_header_text_color": {
+                    "label": "Transparent header text color"
+                },
+                "transparent_header_icon_color": {
+                    "label": "Transparent header icon/logo color",
+                    "info": "Applies to icons, logo, and hamburger menu when header is transparent."
+                },
+                "scrolled_header_text_color": {
+                    "label": "Scrolled header text color",
+                    "info": "Color for nav links and logo text after scrolling down."
+                },
+                "scrolled_header_icon_color": {
+                    "label": "Scrolled header icon/logo color",
+                    "info": "Color for icons, logo image, hamburger, and dropdowns after scrolling down."
+                },
+                "enable_solid_color_on_scroll": {
+                    "label": "Custom background color on scroll",
+                    "info": "When sticky, applies a custom solid background color instead of the default color scheme."
+                },
+                "scroll_header_bg_color": {
+                    "label": "Scrolled header background color"
+                },
+                "enable_glassmorphism": {
+                    "label": "Glassmorphism effect on scroll",
+                    "info": "Adds frosted glass blur effect when header becomes sticky."
+                },
+                "show_border_on_scroll": {
+                    "label": "Show border only on scroll",
+                    "info": "Border appears beneath the header only after scrolling."
+                },
+                "visual_design": {
+                    "content": "Visual & Design"
+                },
+                "header_bg_color": {
+                    "label": "Header background override",
+                    "info": "Leave blank to use base scheme colors."
+                },
+                "header_text_color": {
+                    "label": "Header text color override"
+                },
+                "header_hover_color": {
+                    "label": "Nav link hover color"
+                },
+                "header_border_color": {
+                    "label": "Border color"
+                },
+                "header_border_thickness": {
+                    "label": "Border thickness"
+                },
+                "enable_hover_underline": {
+                    "label": "Animated hover underline on nav links"
+                },
+                "search_header": {
+                    "content": "Search"
+                },
+                "search_style": {
+                    "label": "Search style",
+                    "options__1": {
+                        "label": "Icon opens modal (default)"
+                    },
+                    "options__2": {
+                        "label": "Inline expandable search bar"
+                    }
+                },
+                "icons_utilities": {
+                    "content": "Icons & Utilities"
+                },
+                "show_wishlist_icon": {
+                    "label": "Show wishlist icon"
+                },
+                "enable_mini_cart": {
+                    "label": "Enable mini cart drawer",
+                    "info": "Clicking the cart icon opens a slide-in cart drawer instead of navigating to the cart page."
+                },
+                "enable_account_dropdown": {
+                    "label": "Account dropdown menu",
+                    "info": "Shows a dropdown with account links on hover."
+                },
+                "mobile_header": {
+                    "content": "Mobile overrides"
+                },
+                "enable_mobile_bottom_nav": {
+                    "label": "Show bottom navigation bar on mobile",
+                    "info": "Adds a fixed bottom navigation bar with Home, Shop, Search, Account, and Cart."
+                },
+                "header_height_desktop": {
+                    "label": "Header height (desktop)"
+                },
+                "header_height_mobile": {
+                    "label": "Header height (mobile)"
+                }
             }
         },
         "cart": {
