@@ -268,6 +268,7 @@
     },
     "sections": {
         "header": {
+            "name": "Header",
             "settings": {
                 "logo_header": {
                     "content": "Logo Layout"
@@ -277,7 +278,7 @@
                     "options__1": { "label": "Middle left" },
                     "options__2": { "label": "Top left" },
                     "options__3": { "label": "Top center" },
-                    "options__4": { "label": "Middle center" }
+                    "options__4": { "label": "Middle center (centered logo)" }
                 },
                 "logo_help": {
                     "content": "Edit your logo in theme settings"
@@ -307,8 +308,12 @@
                 },
                 "mobile_nav_style": {
                     "label": "Mobile nav style",
-                    "options__1": { "label": "Slide-in drawer" },
-                    "options__2": { "label": "Full-screen overlay" }
+                    "options__1": {
+                        "label": "Slide-in drawer"
+                    },
+                    "options__2": {
+                        "label": "Full-screen overlay"
+                    }
                 },
                 "sticky_header": {
                     "content": "Sticky & Scroll Behavior"
@@ -318,7 +323,7 @@
                     "options__1": { "label": "None" },
                     "options__2": { "label": "On scroll up" },
                     "options__3": { "label": "Always" },
-                    "options__4": { "label": "Reduce logo size" }
+                    "options__4": { "label": "Shrink on scroll" }
                 },
                 "enable_transparent_header": {
                     "label": "Transparent header at page top",
@@ -351,7 +356,7 @@
                     "info": "Adds frosted glass blur effect when header becomes sticky."
                 },
                 "show_line_separator": {
-                    "label": "Show line separator"
+                    "label": "Show separator line"
                 },
                 "show_border_on_scroll": {
                     "label": "Show border only on scroll",
@@ -387,8 +392,12 @@
                 },
                 "search_style": {
                     "label": "Search style",
-                    "options__1": { "label": "Icon opens modal (default)" },
-                    "options__2": { "label": "Inline expandable search bar" }
+                    "options__1": {
+                        "label": "Icon opens modal (default)"
+                    },
+                    "options__2": {
+                        "label": "Inline expandable search bar"
+                    }
                 },
                 "icons_utilities": {
                     "content": "Icons & Utilities"
@@ -405,16 +414,16 @@
                     "info": "Shows a dropdown with account links on hover."
                 },
                 "enable_country_selector": {
-                    "label": "Enable country selector",
-                    "info": "Allows international buyers to view prices in local currencies."
+                    "label": "Enable country/region selector",
+                    "info": "To add a country/region, go to your market settings."
                 },
                 "enable_language_selector": {
                     "label": "Enable language selector",
-                    "info": "Allows international buyers to translate text strings."
+                    "info": "To add a language, go to your language settings."
                 },
                 "enable_customer_avatar": {
-                    "label": "Enable customer avatar",
-                    "info": "Shows customer avatars next to customer links."
+                    "label": "Show customer avatar",
+                    "info": "Customer avatars are pulled via Gravatar and Shop."
                 },
                 "mobile_header": {
                     "content": "Mobile overrides"
@@ -423,8 +432,8 @@
                     "label": "Show bottom navigation bar on mobile",
                     "info": "Adds a fixed bottom navigation bar with Home, Shop, Search, Account, and Cart."
                 },
-                "margin_bottom": {
-                    "label": "Margin bottom"
+                "mobile_navigation": {
+                    "label": "Mobile Navigation Options"
                 }
             }
         }
