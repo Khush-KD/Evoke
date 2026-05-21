@@ -267,33 +267,58 @@
         }
     },
     "sections": {
-        "announcements": {
-            "previous_announcement": "Previous announcement",
-            "next_announcement": "Next announcement",
-            "carousel": "Carousel",
-            "announcement": "Announcement",
-            "announcement_bar": "Announcement bar"
-        },
-
         "header": {
             "settings": {
                 "logo_header": {
                     "content": "Logo Layout"
                 },
+                "logo_position": {
+                    "label": "Logo position",
+                    "options__1": { "label": "Middle left" },
+                    "options__2": { "label": "Top left" },
+                    "options__3": { "label": "Top center" },
+                    "options__4": { "label": "Middle center" }
+                },
+                "logo_help": {
+                    "content": "Edit your logo in theme settings"
+                },
+                "mobile_logo_position": {
+                    "label": "Mobile logo position",
+                    "options__1": { "label": "Center" },
+                    "options__2": { "label": "Left" }
+                },
+                "header_height_desktop": {
+                    "label": "Header height (desktop)"
+                },
+                "header_height_mobile": {
+                    "label": "Header height (mobile)"
+                },
                 "navigation_header": {
                     "content": "Navigation"
                 },
+                "menu": {
+                    "label": "Menu"
+                },
+                "menu_type_desktop": {
+                    "label": "Desktop menu type",
+                    "options__1": { "label": "Dropdown" },
+                    "options__2": { "label": "Mega menu" },
+                    "options__3": { "label": "Drawer" }
+                },
                 "mobile_nav_style": {
                     "label": "Mobile nav style",
-                    "options__1": {
-                        "label": "Slide-in drawer"
-                    },
-                    "options__2": {
-                        "label": "Full-screen overlay"
-                    }
+                    "options__1": { "label": "Slide-in drawer" },
+                    "options__2": { "label": "Full-screen overlay" }
                 },
                 "sticky_header": {
                     "content": "Sticky & Scroll Behavior"
+                },
+                "sticky_header_type": {
+                    "label": "Sticky header type",
+                    "options__1": { "label": "None" },
+                    "options__2": { "label": "On scroll up" },
+                    "options__3": { "label": "Always" },
+                    "options__4": { "label": "Reduce logo size" }
                 },
                 "enable_transparent_header": {
                     "label": "Transparent header at page top",
@@ -325,12 +350,18 @@
                     "label": "Glassmorphism effect on scroll",
                     "info": "Adds frosted glass blur effect when header becomes sticky."
                 },
+                "show_line_separator": {
+                    "label": "Show line separator"
+                },
                 "show_border_on_scroll": {
                     "label": "Show border only on scroll",
                     "info": "Border appears beneath the header only after scrolling."
                 },
                 "visual_design": {
                     "content": "Visual & Design"
+                },
+                "menu_color_scheme": {
+                    "label": "Menu color scheme"
                 },
                 "header_bg_color": {
                     "label": "Header background override",
@@ -356,12 +387,8 @@
                 },
                 "search_style": {
                     "label": "Search style",
-                    "options__1": {
-                        "label": "Icon opens modal (default)"
-                    },
-                    "options__2": {
-                        "label": "Inline expandable search bar"
-                    }
+                    "options__1": { "label": "Icon opens modal (default)" },
+                    "options__2": { "label": "Inline expandable search bar" }
                 },
                 "icons_utilities": {
                     "content": "Icons & Utilities"
@@ -377,6 +404,18 @@
                     "label": "Account dropdown menu",
                     "info": "Shows a dropdown with account links on hover."
                 },
+                "enable_country_selector": {
+                    "label": "Enable country selector",
+                    "info": "Allows international buyers to view prices in local currencies."
+                },
+                "enable_language_selector": {
+                    "label": "Enable language selector",
+                    "info": "Allows international buyers to translate text strings."
+                },
+                "enable_customer_avatar": {
+                    "label": "Enable customer avatar",
+                    "info": "Shows customer avatars next to customer links."
+                },
                 "mobile_header": {
                     "content": "Mobile overrides"
                 },
@@ -384,105 +423,10 @@
                     "label": "Show bottom navigation bar on mobile",
                     "info": "Adds a fixed bottom navigation bar with Home, Shop, Search, Account, and Cart."
                 },
-                "header_height_desktop": {
-                    "label": "Header height (desktop)"
-                },
-                "header_height_mobile": {
-                    "label": "Header height (mobile)"
+                "margin_bottom": {
+                    "label": "Margin bottom"
                 }
             }
-        },
-        "cart": {
-            "title": "Your cart",
-            "caption": "Cart items",
-            "remove_title": "Remove {{ title }}",
-            "estimated_total": "Estimated total",
-            "new_estimated_total": "New estimated total",
-            "note": "Order special instructions",
-            "checkout": "Check out",
-            "empty": "Your cart is empty",
-            "cart_error": "There was an error while updating your cart. Please try again.",
-            "cart_quantity_error_html": "You can only add {{ quantity }} of this item to your cart.",
-            "duties_and_taxes_included_shipping_at_checkout_with_policy_html": "Duties and taxes included. Discounts and <a href=\"{{ link }}\">shipping</a> calculated at checkout.",
-            "duties_and_taxes_included_shipping_at_checkout_without_policy": "Duties and taxes included. Discounts and shipping calculated at checkout.",
-            "taxes_included_shipping_at_checkout_with_policy_html": "Taxes included. Discounts and <a href=\"{{ link }}\">shipping</a> calculated at checkout.",
-            "taxes_included_shipping_at_checkout_without_policy": "Taxes included. Discounts and shipping calculated at checkout.",
-            "duties_included_taxes_at_checkout_shipping_at_checkout_with_policy_html": "Duties included. Taxes, discounts and <a href=\"{{ link }}\">shipping</a> calculated at checkout.",
-            "duties_included_taxes_at_checkout_shipping_at_checkout_without_policy": "Duties included. Taxes, discounts and shipping calculated at checkout.",
-            "taxes_at_checkout_shipping_at_checkout_with_policy_html": "Taxes, discounts and <a href=\"{{ link }}\">shipping</a> calculated at checkout.",
-            "taxes_at_checkout_shipping_at_checkout_without_policy": "Taxes, discounts and shipping calculated at checkout.",
-            "headings": {
-                "product": "Product",
-                "price": "Price",
-                "total": "Total",
-                "quantity": "Quantity",
-                "image": "Product image"
-            },
-            "update": "Update",
-            "login": {
-                "title": "Have an account?",
-                "paragraph_html": "<a href=\"{{ link }}\" class=\"link underlined-link\">Log in</a> to check out faster."
-            }
-        },
-        "footer": {
-            "payment": "Payment methods"
-        },
-        "featured_blog": {
-            "view_all": "View all",
-            "onboarding_title": "Blog post",
-            "onboarding_content": "Give your customers a summary of your blog post"
-        },
-        "featured_collection": {
-            "view_all": "View all",
-            "view_all_label": "View all products in the {{ collection_name }} collection"
-        },
-        "collection_list": {
-            "view_all": "View all"
-        },
-        "collection_template": {
-            "empty": "No products found",
-            "title": "Collection",
-            "use_fewer_filters_html": "Use fewer filters or <a class=\"{{ class }}\" href=\"{{ link }}\">remove all</a>"
-        },
-        "video": {
-            "load_video": "Load video: {{ description }}"
-        },
-        "slideshow": {
-            "load_slide": "Load slide",
-            "previous_slideshow": "Previous slide",
-            "next_slideshow": "Next slide",
-            "pause_slideshow": "Pause slideshow",
-            "play_slideshow": "Play slideshow",
-            "carousel": "Carousel",
-            "slide": "Slide"
-        },
-        "page": {
-            "title": "Page title"
-        },
-        "quick_order_list": {
-            "product_total": "Product subtotal",
-            "view_cart": "View cart",
-            "each": "{{ money }}/ea",
-            "product": "Product",
-            "variant": "Variant",
-            "variant_total": "Variant total",
-            "items_added": {
-                "one": "{{ quantity }} item added",
-                "other": "{{ quantity }} items added"
-            },
-            "items_removed": {
-                "one": "{{ quantity }} item removed",
-                "other": "{{ quantity }} items removed"
-            },
-            "product_variants": "Product variants",
-            "total_items": "Total items",
-            "remove_all_single_item_confirmation": "Remove 1 item from your cart?",
-            "remove_all_items_confirmation": "Remove all {{ quantity }} items from your cart?",
-            "remove_all": "Remove all",
-            "cancel": "Cancel",
-            "min_error": "This item has a minimum of {{ min }}",
-            "max_error": "This item has a maximum of {{ max }}",
-            "step_error": "You can only add this item in increments of {{ step }}"
         }
     },
     "localization": {
