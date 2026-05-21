@@ -1124,6 +1124,9 @@
                     "label": "Transparent header at page top",
                     "info": "Header becomes transparent when page is at the top, turns solid on any scroll down."
                 },
+                "transparent_header_homepage_only": {
+                    "label": "Enable transparent header on the homepage only"
+                },
                 "transparent_header_text_color": {
                     "label": "Transparent header text color"
                 },

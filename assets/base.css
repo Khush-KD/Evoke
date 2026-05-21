@@ -2349,6 +2349,19 @@ input[type='checkbox'] {
   border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.08);
 }
 
+.section-header,
+.header-wrapper,
+.header,
+.header__icons {
+    overflow: visible !important;
+    contain: none !important;
+}
+
+/* Ensure the absolute dropdown aligns smoothly within view boundaries */
+.header__account-dropdown-menu {
+    right: -10px !important;
+    max-width: 90vw;
+}
 
 /* ---- Account Dropdown Menu Caret ---- */
 .header__account-dropdown > a::after {

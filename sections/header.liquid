@@ -572,10 +572,19 @@
   endif
 -%}
 
+{%- liquid
+  assign use_transparent_header = false
+  if section.settings.enable_transparent_header
+    if section.settings.transparent_header_homepage_only == false or request.page_type == 'index'
+      assign use_transparent_header = true
+    endif
+  endif
+-%}
+
 <{{ header_tag }}
   {% if header_tag == 'sticky-header' %}data-sticky-type="{{ section.settings.sticky_header_type }}"{% endif %}
-  class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator and section.settings.show_border_on_scroll == false %} header-wrapper--border-bottom{% endif %}{% if section.settings.enable_transparent_header %} header-transparent{% endif %}"
-  {% if section.settings.enable_transparent_header %}data-transparent-header{% endif %}
+  class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator and section.settings.show_border_on_scroll == false %} header-wrapper--border-bottom{% endif %}{% if use_transparent_header %} header-transparent{% endif %}"
+  {% if use_transparent_header %}data-transparent-header{% endif %}
 >
   {%- liquid
     assign social_links = false
@@ -1200,6 +1209,12 @@
       "default": true,
       "label": "t:sections.header.settings.enable_transparent_header.label",
       "info": "t:sections.header.settings.enable_transparent_header.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "transparent_header_homepage_only",
+      "default": true,
+      "label": "t:sections.header.settings.transparent_header_homepage_only.label"
     },
     {
       "type": "color",

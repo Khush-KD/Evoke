@@ -83,6 +83,18 @@ class MiniCartDrawer {
     }
 
     bindEvents() {
+        // Direct click binding as the primary action provider to bypass event cancellation bugs
+        const triggerButtons = document.querySelectorAll('[data-mini-cart-trigger]');
+        triggerButtons.forEach(btn => {
+            btn.removeAttribute('href'); // avoid page jumping anchor glitches
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                this.open();
+            });
+        });
+
+        // Event delegation as a fallback action listener
         document.addEventListener('click', (e) => {
             if (e.target.closest('[data-mini-cart-trigger]')) {
                 e.preventDefault();
@@ -90,12 +102,14 @@ class MiniCartDrawer {
             }
         });
 
+        // Close buttons
         document.querySelectorAll('[data-mini-cart-close]').forEach(btn => {
             btn.addEventListener('click', () => this.close());
         });
 
         this.overlay.addEventListener('click', () => this.close());
 
+        // Remove item buttons
         this.drawer.addEventListener('click', (e) => {
             const removeBtn = e.target.closest('[data-remove-key]');
             if (removeBtn) {
@@ -104,14 +118,9 @@ class MiniCartDrawer {
             }
         });
 
+        // ESC key close support
         document.addEventListener('keydown', (e) => {
-            if (!this.isOpen()) return;
-
-            if (e.key === 'Escape') {
-                this.close();
-            } else if (e.key === 'Tab') {
-                FocusTrap.trap(this.drawer, e);
-            }
+            if (e.key === 'Escape' && this.isOpen()) this.close();
         });
     }
 
