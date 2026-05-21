@@ -2340,15 +2340,17 @@ input[type='checkbox'] {
 }
 
 /* Main Header Layout */
+/* ---- Smooth Transition Engine ---- */
 .header-wrapper {
-    transition: background 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 
 .header-wrapper--border-bottom {
   border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.08);
 }
 
-/* ---- Account dropdown arrow caret ---- */
+
+/* ---- Account Dropdown Menu Caret ---- */
 .header__account-dropdown > a::after {
     content: '';
     display: inline-block;
@@ -2358,43 +2360,39 @@ input[type='checkbox'] {
     border-right: 1.5px solid currentColor;
     border-bottom: 1.5px solid currentColor;
     transform: rotate(45deg) translateY(-2px);
-    transition: transform 0.2s;
+    transition: transform 0.2s ease;
 }
 
 .header__account-dropdown:hover > a::after,
 .header__account-dropdown:focus-within > a::after {
-    transform: rotate(-135deg) translateY(-2px);
+    transform: rotate(-135deg) translateY(2px);
 }
 
-/* ---- Bottom nav safe area ---- */
+/* ---- Touch Target Improvements & Mobile Bars ---- */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
     .header__bottom-nav {
         padding-bottom: calc(0.8rem + env(safe-area-inset-bottom));
     }
 }
 
-/* ---- Responsive: hide bottom nav on desktop ---- */
+/* ---- Responsive Desktop Resets ---- */
 @media screen and (min-width: 750px) {
     .header__bottom-nav {
         display: none !important;
     }
 }
 
-/* ---- Announcement bar animation ---- */
-#header-announcement {
-    overflow: hidden;
-    max-height: 100px;
-}
-
-/* ---- Wishlist icon hover ---- */
+/* ---- Wishlist Hover Transitions ---- */
 .header__icon--wishlist:hover svg {
     fill: currentColor;
-    transition: fill 0.2s;
+    transition: fill 0.2s ease-in-out;
 }
 
-/* ---- Focus styles ---- */
+/* ---- Focus Accessibility Enforcements ---- */
 .header__icon:focus-visible,
-.header__menu-item:focus-visible {
+.header__menu-item:focus-visible,
+.mini-cart-item__remove:focus-visible,
+.mini-cart-drawer__close:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 3px;
     border-radius: 2px;

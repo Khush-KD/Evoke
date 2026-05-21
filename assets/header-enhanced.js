@@ -1,11 +1,38 @@
-/**
- * header-enhanced.js
- * Handles: mini cart drawer, announcement bar dismiss, wishlist count,
- *          swipe-to-close gesture, animated hamburger, cart AJAX
- */
+/* =============================================
+   ACCESSIBILITY & FOCUS MANAGEMENT
+   ============================================= */
+class FocusTrap {
+    static getFocusableElements(container) {
+        return Array.from(container.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )).filter(el => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
+    }
+
+    static trap(container, event) {
+        const focusable = this.getFocusableElements(container);
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.key === 'Tab') {
+            if (event.shiftKey) {
+                if (document.activeElement === first) {
+                    last.focus();
+                    event.preventDefault();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    first.focus();
+                    event.preventDefault();
+                }
+            }
+        }
+    }
+}
 
 /* =============================================
-   ANNOUNCEMENT BAR
+   ANNOUNCEMENT BAR STATE CONTROLLER
    ============================================= */
 (function () {
     const bar = document.getElementById('header-announcement');
@@ -14,6 +41,7 @@
     const STORAGE_KEY = 'dawn-announcement-dismissed';
     if (sessionStorage.getItem(STORAGE_KEY)) {
         bar.classList.add('is-hidden');
+        bar.style.display = 'none';
     }
 
     const closeBtn = bar.querySelector('[data-announcement-close]');
@@ -26,30 +54,35 @@
                 bar.style.opacity = '0';
                 bar.style.overflow = 'hidden';
             });
-            setTimeout(() => bar.classList.add('is-hidden'), 320);
+            setTimeout(() => {
+                bar.classList.add('is-hidden');
+                bar.style.display = 'none';
+            }, 320);
             sessionStorage.setItem(STORAGE_KEY, '1');
         });
     }
 })();
 
 /* =============================================
-   MINI CART DRAWER
+   MINI CART ACCESSIBLE DRAWER controller
    ============================================= */
 class MiniCartDrawer {
     constructor() {
         this.drawer = document.getElementById('mini-cart-drawer');
         this.overlay = document.getElementById('mini-cart-overlay');
+        this.trigger = document.querySelector('[data-mini-cart-trigger]');
         if (!this.drawer || !this.overlay) return;
 
         this.body = document.getElementById('mini-cart-body');
         this.subtotalEl = document.getElementById('mini-cart-subtotal');
+        this._activeElementBeforeOpen = null;
+        this._rootUrl = window.Shopify?.routes?.root || '/';
 
         this.bindEvents();
         this.initSwipeClose();
     }
 
     bindEvents() {
-        // Trigger buttons
         document.addEventListener('click', (e) => {
             if (e.target.closest('[data-mini-cart-trigger]')) {
                 e.preventDefault();
@@ -57,14 +90,12 @@ class MiniCartDrawer {
             }
         });
 
-        // Close buttons
         document.querySelectorAll('[data-mini-cart-close]').forEach(btn => {
             btn.addEventListener('click', () => this.close());
         });
 
         this.overlay.addEventListener('click', () => this.close());
 
-        // Remove item buttons (delegated)
         this.drawer.addEventListener('click', (e) => {
             const removeBtn = e.target.closest('[data-remove-key]');
             if (removeBtn) {
@@ -73,9 +104,14 @@ class MiniCartDrawer {
             }
         });
 
-        // ESC key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isOpen()) this.close();
+            if (!this.isOpen()) return;
+
+            if (e.key === 'Escape') {
+                this.close();
+            } else if (e.key === 'Tab') {
+                FocusTrap.trap(this.drawer, e);
+            }
         });
     }
 
@@ -87,31 +123,34 @@ class MiniCartDrawer {
 
         this.drawer.addEventListener('touchend', (e) => {
             const diffX = e.changedTouches[0].clientX - startX;
-            if (diffX > 60) this.close(); // swipe right to close
+            if (diffX > 60) this.close();
         }, { passive: true });
     }
 
     open() {
+        this._activeElementBeforeOpen = document.activeElement;
         this.drawer.classList.add('is-open');
         this.overlay.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
         this.drawer.setAttribute('aria-hidden', 'false');
-        if (!this._cartLoaded) {
-            this.refresh();
-            this._cartLoaded = true;
-        }
-    }
+        if (this.trigger) this.trigger.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
 
-    async removeItem(key) {
-        // existing code...
-        this._cartLoaded = false; // invalidate cache after mutation
+        this.refresh().then(() => {
+            const focusable = FocusTrap.getFocusableElements(this.drawer);
+            if (focusable.length > 0) focusable[0].focus();
+        });
     }
 
     close() {
         this.drawer.classList.remove('is-open');
         this.overlay.classList.remove('is-open');
-        document.body.style.overflow = '';
         this.drawer.setAttribute('aria-hidden', 'true');
+        if (this.trigger) this.trigger.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+
+        if (this._activeElementBeforeOpen) {
+            this._activeElementBeforeOpen.focus();
+        }
     }
 
     isOpen() {
@@ -120,7 +159,7 @@ class MiniCartDrawer {
 
     async refresh() {
         try {
-            const res = await fetch('/cart.js');
+            const res = await fetch(`${this._rootUrl}cart.js`);
             const cart = await res.json();
             this.renderCart(cart);
         } catch (err) {
@@ -130,7 +169,7 @@ class MiniCartDrawer {
 
     async removeItem(key) {
         try {
-            const res = await fetch('/cart/change.js', {
+            const res = await fetch(`${this._rootUrl}cart/change.js`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: key, quantity: 0 })
@@ -147,22 +186,25 @@ class MiniCartDrawer {
         if (!this.body) return;
 
         if (cart.item_count === 0) {
-            this.body.innerHTML = '<p class="mini-cart-drawer__empty">Your cart is empty.</p>';
+            this.body.innerHTML = `<p class="mini-cart-drawer__empty">${window.theme?.strings?.cartEmpty || 'Your cart is empty.'}</p>`;
             if (this.subtotalEl) this.subtotalEl.textContent = this.formatMoney(0);
             return;
         }
 
-        const items = cart.items.map(item => `
-      <div class="mini-cart-item" data-key="${item.key}">
-        <img src="${item.image ? item.image.replace('http:', 'https:') : ''}" alt="${this.escHtml(item.title)}" width="70" height="70" loading="lazy">
-        <div>
-          <p class="mini-cart-item__title">${this.escHtml(item.product_title)}</p>
-          ${item.variant_title ? `<p class="mini-cart-item__price">${this.escHtml(item.variant_title)}</p>` : ''}
-          <p class="mini-cart-item__price">Qty: ${item.quantity} · ${this.formatMoney(item.line_price)}</p>
-        </div>
-        <button class="mini-cart-item__remove" data-remove-key="${item.key}" aria-label="Remove ${this.escHtml(item.title)}">&#x2715;</button>
-      </div>
-    `).join('');
+        const items = cart.items.map(item => {
+            const imageUrl = item.image ? item.image.replace('http:', 'https:') : '';
+            return `
+                <div class="mini-cart-item" data-key="${item.key}">
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${this.escHtml(item.title)}" width="70" height="70" loading="lazy">` : `<div style="width:70px;height:70px;background:#eee"></div>`}
+                    <div>
+                        <p class="mini-cart-item__title">${this.escHtml(item.product_title)}</p>
+                        ${item.variant_title ? `<p class="mini-cart-item__price">${this.escHtml(item.variant_title)}</p>` : ''}
+                        <p class="mini-cart-item__price">Qty: ${item.quantity} · ${this.formatMoney(item.line_price)}</p>
+                    </div>
+                    <button class="mini-cart-item__remove" data-remove-key="${item.key}" aria-label="Remove ${this.escHtml(item.title)}">&#x2715;</button>
+                </div>
+            `;
+        }).join('');
 
         this.body.innerHTML = items;
 
@@ -174,11 +216,6 @@ class MiniCartDrawer {
     updateCartBubble(count) {
         const bubbles = document.querySelectorAll('.cart-count-bubble span[aria-hidden]');
         bubbles.forEach(b => b.textContent = count);
-        const icons = document.querySelectorAll('.header__icon--cart');
-        icons.forEach(icon => {
-            const cartIcon = icon.querySelector('.svg-wrapper');
-            // Could update icon state here
-        });
     }
 
     formatMoney(cents) {
@@ -198,7 +235,7 @@ class MiniCartDrawer {
 }
 
 /* =============================================
-   WISHLIST COUNT (localStorage-based)
+   WISHLIST PERSISTENT STORE CONTROLLER
    ============================================= */
 (function () {
     const countEl = document.getElementById('wishlist-count');
@@ -213,7 +250,9 @@ class MiniCartDrawer {
             } else {
                 countEl.style.display = 'none';
             }
-        } catch (e) { }
+        } catch (e) {
+            console.error('Error parsing wishlist data', e);
+        }
     }
 
     updateWishlistCount();
@@ -221,6 +260,8 @@ class MiniCartDrawer {
 })();
 
 /* =============================================
-   INIT
+   INITIALIZE LIBRARIES
    ============================================= */
-new MiniCartDrawer();
+document.addEventListener('DOMContentLoaded', () => {
+    new MiniCartDrawer();
+});
