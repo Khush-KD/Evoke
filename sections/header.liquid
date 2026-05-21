@@ -16,8 +16,8 @@
   :root {
     --header-height-desktop: {{ section.settings.header_height_desktop }}px;
     --header-height-mobile: {{ section.settings.header_height_mobile }}px;
-    --header-bg-color: {{ section.settings.header_bg_color }};
-    --header-text-color: {{ section.settings.header_text_color }};
+    --header-bg-color: {{ section.settings.header_bg_color | default: 'transparent' }};
+    --header-text-color: {{ section.settings.header_text_color | default: 'inherit' }};
     --header-hover-color: {{ section.settings.header_hover_color }};
     --header-border-color: {{ section.settings.header_border_color }};
     --header-border-thickness: {{ section.settings.header_border_thickness }}px;
@@ -81,20 +81,8 @@
     }
   }
 
-/* =============================================
-     TRANSPARENT HEADER + SCROLLED COLORS
-     ============================================= */
+  /* Transparent Header State */
   {%- if section.settings.enable_transparent_header -%}
-
-  /*
-   * --hw-text and --hw-icon are set in TWO states:
-   *   1. .header-transparent  → transparent colors (white by default)
-   *   2. :not(.header-transparent) → scrolled colors (dark by default)
-   * This is the ONLY place these variables are defined.
-   */
-
-  /* ── TRANSPARENT STATE: use the "transparent header" color settings ── */
-
   .header-wrapper.header-transparent {
     background: transparent !important;
     position: absolute;
@@ -103,8 +91,7 @@
     transition: background-color 0.4s ease, backdrop-filter 0.4s ease;
   }
   .header-wrapper.header-transparent::after { display: none; }
- 
-  /* ── TRANSPARENT: force text/icon color to transparent-header setting ── */
+  
   .header-wrapper.header-transparent .header__menu-item,
   .header-wrapper.header-transparent .header__menu-item span,
   .header-wrapper.header-transparent .header__heading-link,
@@ -143,8 +130,9 @@
     filter: var(--hw-logo-filter, none);
     transition: filter 0.35s ease;
   }
- 
-/* ── SCROLLED STATE: only when glassmorphism or solid bg is active ── */
+  {%- endif -%}
+
+  /* Scrolled/Sticky Header Color Adapters */
   .section-header.scrolled .header-wrapper .header__menu-item,
   .section-header.scrolled .header-wrapper .header__menu-item span,
   .section-header.scrolled .header-wrapper .header__heading-link,
@@ -203,15 +191,10 @@
     transition: filter 0.35s ease;
   }
   .header-wrapper {
-    transition: background-color 0.4s ease, backdrop-filter 0.4s ease;
+    transition: background-color 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease;
   }
 
-  {%- endif -%}
-
-  /* =============================================
-     SOLID COLOR ON SCROLL
-     (works independently — no transparent header required)
-     ============================================= */
+  /* Solid Color on Scroll Sticky Mode */
   {%- if section.settings.enable_solid_color_on_scroll -%}
   .section-header.scrolled .header-wrapper,
   .shopify-section-header-sticky .header-wrapper,
@@ -222,22 +205,18 @@
   }
   {%- endif -%}
 
-  /* =============================================
-     GLASSMORPHISM
-     ============================================= */
+  /* Schema-Compliant Dynamic Glassmorphism (Supports any custom color scheme!) */
   {%- if section.settings.enable_glassmorphism -%}
   .section-header.scrolled .header-wrapper,
   .shopify-section-header-sticky .header-wrapper {
-    background: rgba(255,255,255,0.72) !important;
+    background: rgba(var(--color-background), 0.75) !important;
     backdrop-filter: blur(16px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.3) !important;
+    border-bottom: 1px solid rgba(var(--color-foreground), 0.1) !important;
   }
   {%- endif -%}
 
-  /* =============================================
-     HOVER UNDERLINE ANIMATION
-     ============================================= */
+  /* Nav Links Animated Underline */
   {%- if section.settings.enable_hover_underline -%}
   .header__menu-item span,
   .header__menu-item {
@@ -260,13 +239,10 @@
   }
   {%- endif -%}
 
-  /* =============================================
-     BORDER ON SCROLL
-     ============================================= */
+  /* Conditional Borders */
   {%- if section.settings.show_border_on_scroll -%}
   .header-wrapper {
     border-bottom: var(--header-border-thickness) solid transparent;
-    transition: border-color 0.3s ease;
   }
   .section-header.scrolled .header-wrapper,
   .shopify-section-header-sticky .header-wrapper {
@@ -278,9 +254,7 @@
   }
   {%- endif -%}
 
-  /* =============================================
-     WISHLIST ICON
-     ============================================= */
+  /* Wishlist Icon Styling */
   .header__icon--wishlist {
     position: relative;
   }
@@ -300,9 +274,7 @@
     font-weight: 700;
   }
 
-  /* =============================================
-     INLINE SEARCH
-     ============================================= */
+  /* Inline Expandable Search Bar */
   {%- if section.settings.search_style == 'inline' -%}
   .header__search-inline {
     display: flex;
@@ -330,9 +302,7 @@
   }
   {%- endif -%}
 
-  /* =============================================
-     ACCOUNT DROPDOWN
-     ============================================= */
+  /* Account Interactive Dropdown */
   .header__account-dropdown {
     position: relative;
   }
@@ -340,7 +310,7 @@
     position: absolute;
     top: calc(100% + 0.8rem);
     right: 0;
-    min-width: 16rem;
+    min-width: 18rem;
     background: rgb(var(--color-background));
     border: 1px solid rgba(var(--color-foreground), 0.1);
     border-radius: 0.8rem;
@@ -378,12 +348,10 @@
   .mini-cart-overlay,
   .mini-cart-drawer {
     z-index: 99999;
-    isolation: auto; /* don't trap inside a stacking context */
+    isolation: auto;
   }
 
-  /* =============================================
-     MINI CART DRAWER
-     ============================================= */
+  /* Cart Drawer Base Layout */
   .mini-cart-overlay {
     position: fixed;
     inset: 0;
@@ -430,7 +398,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.4rem;
+    padding: 0.8rem;
     color: rgb(var(--color-foreground));
     opacity: 0.6;
     transition: opacity 0.2s;
@@ -480,7 +448,7 @@
     color: rgb(var(--color-foreground));
     font-size: 1.8rem;
     line-height: 1;
-    padding: 0.2rem;
+    padding: 0.4rem;
   }
   .mini-cart-item__remove:hover { opacity: 1; }
   .mini-cart-drawer__subtotal {
@@ -497,9 +465,7 @@
     font-size: 1.4rem;
   }
 
-  /* =============================================
-     MOBILE BOTTOM NAV
-     ============================================= */
+  /* Mobile Bottom Navigation Bar */
   {%- if section.settings.enable_mobile_bottom_nav -%}
   .header__bottom-nav {
     display: none;
@@ -537,9 +503,7 @@
   }
   {%- endif -%}
 
-  /* =============================================
-     FULL-SCREEN MOBILE NAV
-     ============================================= */
+  /* Mobile Fullscreen Navigation */
   {%- if section.settings.mobile_nav_style == 'fullscreen' -%}
   @media screen and (max-width: 989px) {
     .menu-drawer {
@@ -551,9 +515,7 @@
   }
   {%- endif -%}
 
-  /* =============================================
-     SHRINK ON SCROLL
-     ============================================= */
+  /* Header Shrink Sticky Animation */
   {%- if section.settings.sticky_header_type == 'reduce-logo-size' -%}
   .header-wrapper {
     transition: padding 0.3s ease;
@@ -564,7 +526,6 @@
     transition: padding 0.3s ease;
   }
   {%- endif -%}
-  
 </style>
 
 {%- style -%}
@@ -735,7 +696,6 @@
         {%- endif -%}
       </div>
 
-      {%- comment -%} Inline Search {%- endcomment -%}
       {%- if section.settings.search_style == 'inline' -%}
         <form action="{{ routes.search_url }}" method="get" class="header__search-inline small-hide">
           <span class="svg-wrapper">{{ 'icon-search.svg' | inline_asset_content }}</span>
@@ -746,18 +706,16 @@
         {% render 'header-search', input_id: 'Search-In-Modal' %}
       {%- endif -%}
 
-      {%- comment -%} Wishlist Icon {%- endcomment -%}
       {%- if section.settings.show_wishlist_icon -%}
-        <a href="{{ routes.root_url }}pages/wishlist" class="header__icon header__icon--wishlist link focus-inset" aria-label="Wishlist">
+        <a href="{{ routes.root_url }}pages/wishlist" class="header__icon header__icon--wishlist link focus-inset" aria-label="{{ 'general.wishlist.title' | t | default: 'Wishlist' }}">
           <span class="svg-wrapper">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </span>
-          <span class="visually-hidden">Wishlist</span>
+          <span class="visually-hidden">{{ 'general.wishlist.title' | t | default: 'Wishlist' }}</span>
           <div class="wishlist-count-bubble" id="wishlist-count" style="display:none">0</div>
         </a>
       {%- endif -%}
 
-      {%- comment -%} Account with Dropdown {%- endcomment -%}
       {%- if shop.customer_accounts_enabled -%}
         {%- if section.settings.enable_account_dropdown -%}
           <div class="header__account-dropdown">
@@ -765,6 +723,8 @@
               href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
               class="header__icon header__icon--account link focus-inset{% if section.settings.menu != blank %} small-hide{% endif %}"
               rel="nofollow"
+              aria-expanded="false"
+              aria-haspopup="true"
             >
               {%- if section.settings.enable_customer_avatar -%}
                 <account-icon>
@@ -783,13 +743,13 @@
             </a>
             <div class="header__account-dropdown-menu">
               {%- if customer -%}
-                <a href="{{ routes.account_url }}">My Account</a>
-                <a href="{{ routes.account_orders_url }}">Orders</a>
+                <a href="{{ routes.account_url }}">{{ 'customer.account.title' | t | default: 'My Account' }}</a>
+                <a href="{{ routes.account_addresses_url }}">{{ 'customer.addresses.title' | t | default: 'Addresses' }}</a>
                 <div class="account-dropdown__divider"></div>
-                <a href="{{ routes.account_logout_url }}">Sign Out</a>
+                <a href="{{ routes.account_logout_url }}">{{ 'customer.log_out' | t | default: 'Sign Out' }}</a>
               {%- else -%}
-                <a href="{{ routes.account_login_url }}">Sign In</a>
-                <a href="{{ routes.account_register_url }}">Create Account</a>
+                <a href="{{ routes.account_login_url }}">{{ 'customer.log_in' | t | default: 'Sign In' }}</a>
+                <a href="{{ routes.account_register_url }}">{{ 'customer.register.title' | t | default: 'Create Account' }}</a>
               {%- endif -%}
             </div>
           </div>
@@ -820,12 +780,14 @@
         {%- endcase -%}
       {%- endfor -%}
 
-      {%- comment -%} Cart Icon — triggers mini drawer if enabled {%- endcomment -%}
       {%- if section.settings.enable_mini_cart -%}
         <button
           class="header__icon header__icon--cart link focus-inset"
           id="cart-icon-bubble"
           aria-label="{{ 'templates.cart.cart' | t }}"
+          aria-haspopup="dialog"
+          aria-controls="mini-cart-drawer"
+          aria-expanded="false"
           data-mini-cart-trigger
         >
           {% if cart == empty %}
@@ -865,68 +827,66 @@
   </header>
 </{{ header_tag }}>
 
-{%- comment -%} Mini Cart Drawer {%- endcomment -%}
 {%- if section.settings.enable_mini_cart -%}
 <div class="mini-cart-overlay" id="mini-cart-overlay" data-mini-cart-overlay></div>
-<div class="mini-cart-drawer" id="mini-cart-drawer" aria-label="Cart" role="dialog" data-mini-cart>
+<div class="mini-cart-drawer" id="mini-cart-drawer" aria-label="{{ 'sections.cart.title' | t | default: 'Your Cart' }}" role="dialog" aria-modal="true" aria-hidden="true" data-mini-cart>
   <div class="mini-cart-drawer__header">
-    <h2 class="mini-cart-drawer__title">Your Cart</h2>
-    <button class="mini-cart-drawer__close" aria-label="Close cart" data-mini-cart-close>
+    <h2 class="mini-cart-drawer__title">{{ 'sections.cart.title' | t | default: 'Your Cart' }}</h2>
+    <button class="mini-cart-drawer__close" aria-label="{{ 'accessibility.close' | t | default: 'Close' }}" data-mini-cart-close>
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
   <div class="mini-cart-drawer__body" id="mini-cart-body">
     {%- if cart == empty -%}
-      <p class="mini-cart-drawer__empty">Your cart is empty.</p>
+      <p class="mini-cart-drawer__empty">{{ 'sections.cart.empty' | t | default: 'Your cart is empty.' }}</p>
     {%- else -%}
       {%- for item in cart.items -%}
         <div class="mini-cart-item" data-key="{{ item.key }}">
-          <img src="{{ item.image | image_url: width: 140 }}" alt="{{ item.title | escape }}" width="70" height="70">
+          <img src="{{ item.image | image_url: width: 140 }}" alt="{{ item.title | escape }}" width="70" height="70" loading="lazy">
           <div>
             <p class="mini-cart-item__title">{{ item.product.title }}</p>
             {%- unless item.product.has_only_default_variant -%}
               <p class="mini-cart-item__price">{{ item.variant.title }}</p>
             {%- endunless -%}
-            <p class="mini-cart-item__price">Qty: {{ item.quantity }} · {{ item.line_price | money }}</p>
+            <p class="mini-cart-item__price">{{ 'products.product.quantity.label' | t }}: {{ item.quantity }} · {{ item.line_price | money }}</p>
           </div>
-          <button class="mini-cart-item__remove" data-remove-key="{{ item.key }}" aria-label="Remove {{ item.title | escape }}">&#x2715;</button>
+          <button class="mini-cart-item__remove" data-remove-key="{{ item.key }}" aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}">&#x2715;</button>
         </div>
       {%- endfor -%}
     {%- endif -%}
   </div>
   <div class="mini-cart-drawer__footer">
     <div class="mini-cart-drawer__subtotal">
-      <span>Subtotal</span>
+      <span>{{ 'sections.cart.subtotal' | t | default: 'Subtotal' }}</span>
       <span id="mini-cart-subtotal">{{ cart.total_price | money }}</span>
     </div>
-    <a href="{{ routes.cart_url }}" class="button button--primary">View Cart</a>
-    <a href="/checkout" class="button" style="margin-top:0.8rem">Checkout</a>
+    <a href="{{ routes.cart_url }}" class="button button--primary">{{ 'sections.cart.view_cart' | t | default: 'View Cart' }}</a>
+    <a href="{{ routes.cart_url | replace: 'cart', 'checkout' }}" class="button" style="margin-top:0.8rem">{{ 'sections.cart.checkout' | t | default: 'Checkout' }}</a>
   </div>
 </div>
 {%- endif -%}
 
-{%- comment -%} Mobile Bottom Nav {%- endcomment -%}
 {%- if section.settings.enable_mobile_bottom_nav -%}
-<nav class="header__bottom-nav" aria-label="Mobile navigation">
+<nav class="header__bottom-nav" aria-label="{{ 'sections.header.settings.mobile_navigation.label' | t | default: 'Mobile navigation' }}">
   <a href="{{ routes.root_url }}" class="header__bottom-nav-item{% if request.page_type == 'index' %} active{% endif %}">
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span>Home</span>
+    <span>{{ 'general.navigation.home' | t | default: 'Home' }}</span>
   </a>
   <a href="{{ routes.collections_url }}" class="header__bottom-nav-item{% if request.page_type == 'list-collections' %} active{% endif %}">
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-    <span>Shop</span>
+    <span>{{ 'general.navigation.shop' | t | default: 'Shop' }}</span>
   </a>
   <a href="{{ routes.search_url }}" class="header__bottom-nav-item{% if request.page_type == 'search' %} active{% endif %}">
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <span>Search</span>
+    <span>{{ 'general.search.search' | t | default: 'Search' }}</span>
   </a>
   <a href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}" class="header__bottom-nav-item" rel="nofollow">
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Account</span>
+    <span>{{ 'customer.account_fallback' | t | default: 'Account' }}</span>
   </a>
   <a href="{{ routes.cart_url }}" class="header__bottom-nav-item{% if request.page_type == 'cart' %} active{% endif %}">
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-    <span>Cart {%- if cart.item_count > 0 -%}({{ cart.item_count }}){%- endif -%}</span>
+    <span>{{ 'templates.cart.cart' | t }} {%- if cart.item_count > 0 -%}({{ cart.item_count }}){%- endif -%}</span>
   </a>
 </nav>
 {%- endif -%}
@@ -965,11 +925,11 @@
       let ticking = false;
       this._throttledScroll = () => {
         if (!ticking) {
-        requestAnimationFrame(() => {
-                this.onScrollHandler();
-                ticking = false;
-            });
-            ticking = true;
+          requestAnimationFrame(() => {
+            this.onScrollHandler();
+            ticking = false;
+          });
+          ticking = true;
         }
       };
       window.addEventListener('scroll', this._throttledScroll, { passive: true });
@@ -1017,12 +977,10 @@
     onScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      // Always handle transparency first, independent of everything else
       if (this.hasAttribute('data-transparent-header')) {
         this._updateTransparency();
       }
 
-      // Scrolled class for border/glass effects
       if (scrollTop > 10) {
         this.header.classList.add('scrolled');
       } else {
@@ -1144,16 +1102,16 @@
   "settings": [
     {
       "type": "header",
-      "content": "Logo Layout"
+      "content": "t:sections.header.settings.logo_header.content"
     },
     {
       "type": "select",
       "id": "logo_position",
       "options": [
-        { "value": "top-left", "label": "Top left" },
-        { "value": "top-center", "label": "Top center" },
-        { "value": "middle-left", "label": "Middle left" },
-        { "value": "middle-center", "label": "Middle center (centered logo)" }
+        { "value": "top-left", "label": "t:sections.header.settings.logo_position.options__2.label" },
+        { "value": "top-center", "label": "t:sections.header.settings.logo_position.options__3.label" },
+        { "value": "middle-left", "label": "t:sections.header.settings.logo_position.options__1.label" },
+        { "value": "middle-center", "label": "t:sections.header.settings.logo_position.options__4.label" }
       ],
       "default": "middle-left",
       "label": "t:sections.header.settings.logo_position.label",
@@ -1163,8 +1121,8 @@
       "type": "select",
       "id": "mobile_logo_position",
       "options": [
-        { "value": "center", "label": "Center" },
-        { "value": "left", "label": "Left" }
+        { "value": "center", "label": "t:sections.header.settings.mobile_logo_position.options__1.label" },
+        { "value": "left", "label": "t:sections.header.settings.mobile_logo_position.options__2.label" }
       ],
       "default": "center",
       "label": "t:sections.header.settings.mobile_logo_position.label"
@@ -1176,7 +1134,7 @@
       "max": 160,
       "step": 4,
       "unit": "px",
-      "label": "Header height (desktop)",
+      "label": "t:sections.header.settings.header_height_desktop.label",
       "default": 80
     },
     {
@@ -1186,12 +1144,12 @@
       "max": 100,
       "step": 4,
       "unit": "px",
-      "label": "Header height (mobile)",
+      "label": "t:sections.header.settings.header_height_mobile.label",
       "default": 60
     },
     {
       "type": "header",
-      "content": "Navigation"
+      "content": "t:sections.header.settings.navigation_header.content"
     },
     {
       "type": "link_list",
@@ -1203,9 +1161,9 @@
       "type": "select",
       "id": "menu_type_desktop",
       "options": [
-        { "value": "dropdown", "label": "Dropdown" },
-        { "value": "mega", "label": "Mega menu" },
-        { "value": "drawer", "label": "Drawer" }
+        { "value": "dropdown", "label": "t:sections.header.settings.menu_type_desktop.options__1.label" },
+        { "value": "mega", "label": "t:sections.header.settings.menu_type_desktop.options__2.label" },
+        { "value": "drawer", "label": "t:sections.header.settings.menu_type_desktop.options__3.label" }
       ],
       "default": "dropdown",
       "label": "t:sections.header.settings.menu_type_desktop.label"
@@ -1214,15 +1172,15 @@
       "type": "select",
       "id": "mobile_nav_style",
       "options": [
-        { "value": "drawer", "label": "Slide-in drawer" },
-        { "value": "fullscreen", "label": "Full-screen overlay" }
+        { "value": "drawer", "label": "t:sections.header.settings.mobile_nav_style.options__1.label" },
+        { "value": "fullscreen", "label": "t:sections.header.settings.mobile_nav_style.options__2.label" }
       ],
       "default": "drawer",
-      "label": "Mobile nav style"
+      "label": "t:sections.header.settings.mobile_nav_style.label"
     },
     {
       "type": "header",
-      "content": "Sticky & Scroll Behavior"
+      "content": "t:sections.header.settings.sticky_header.content"
     },
     {
       "type": "select",
@@ -1231,7 +1189,7 @@
         { "value": "none", "label": "t:sections.header.settings.sticky_header_type.options__1.label" },
         { "value": "on-scroll-up", "label": "t:sections.header.settings.sticky_header_type.options__2.label" },
         { "value": "always", "label": "t:sections.header.settings.sticky_header_type.options__3.label" },
-        { "value": "reduce-logo-size", "label": "Shrink on scroll" }
+        { "value": "reduce-logo-size", "label": "t:sections.header.settings.sticky_header_type.options__4.label" }
       ],
       "default": "on-scroll-up",
       "label": "t:sections.header.settings.sticky_header_type.label"
@@ -1240,55 +1198,55 @@
       "type": "checkbox",
       "id": "enable_transparent_header",
       "default": true,
-      "label": "Transparent header at page top",
-      "info": "Header becomes transparent when page is at the top, turns solid on any scroll down. Ideal for hero images."
+      "label": "t:sections.header.settings.enable_transparent_header.label",
+      "info": "t:sections.header.settings.enable_transparent_header.info"
     },
     {
       "type": "color",
       "id": "transparent_header_text_color",
       "default": "#ffffff",
-      "label": "Transparent header text color"
+      "label": "t:sections.header.settings.transparent_header_text_color.label"
     },
     {
       "type": "color",
       "id": "transparent_header_icon_color",
       "default": "#ffffff",
-      "label": "Transparent header icon/logo color",
-      "info": "Applies to icons, logo, and hamburger menu when header is transparent. Reverts to scrolled colors on scroll."
+      "label": "t:sections.header.settings.transparent_header_icon_color.label",
+      "info": "t:sections.header.settings.transparent_header_icon_color.info"
     },
     {
       "type": "color",
       "id": "scrolled_header_text_color",
       "default": "#121212",
-      "label": "Scrolled header text color",
-      "info": "Color for nav links and logo text after scrolling down."
+      "label": "t:sections.header.settings.scrolled_header_text_color.label",
+      "info": "t:sections.header.settings.scrolled_header_text_color.info"
     },
     {
       "type": "color",
       "id": "scrolled_header_icon_color",
       "default": "#121212",
-      "label": "Scrolled header icon/logo color",
-      "info": "Color for icons, logo image, hamburger, and dropdowns after scrolling down."
+      "label": "t:sections.header.settings.scrolled_header_icon_color.label",
+      "info": "t:sections.header.settings.scrolled_header_icon_color.info"
     },
     {
       "type": "checkbox",
       "id": "enable_solid_color_on_scroll",
       "default": true,
-      "label": "Custom background color on scroll",
-      "info": "When sticky, applies a custom solid background color instead of the default color scheme."
+      "label": "t:sections.header.settings.enable_solid_color_on_scroll.label",
+      "info": "t:sections.header.settings.enable_solid_color_on_scroll.info"
     },
     {
       "type": "color",
       "id": "scroll_header_bg_color",
       "default": "#ffffff",
-      "label": "Scrolled header background color"
+      "label": "t:sections.header.settings.scroll_header_bg_color.label"
     },
     {
       "type": "checkbox",
       "id": "enable_glassmorphism",
       "default": false,
-      "label": "Glassmorphism effect on scroll",
-      "info": "Adds frosted glass blur effect when header becomes sticky."
+      "label": "t:sections.header.settings.enable_glassmorphism.label",
+      "info": "t:sections.header.settings.enable_glassmorphism.info"
     },
     {
       "type": "checkbox",
@@ -1300,12 +1258,12 @@
       "type": "checkbox",
       "id": "show_border_on_scroll",
       "default": false,
-      "label": "Show border only on scroll",
-      "info": "Border appears beneath the header only after scrolling."
+      "label": "t:sections.header.settings.show_border_on_scroll.label",
+      "info": "t:sections.header.settings.show_border_on_scroll.info"
     },
     {
       "type": "header",
-      "content": "Visual & Design"
+      "content": "t:sections.header.settings.visual_design.content"
     },
     {
       "type": "color_scheme",
@@ -1322,24 +1280,24 @@
     {
       "type": "color",
       "id": "header_bg_color",
-      "label": "Header background color override",
-      "info": "Leave blank to use color scheme. Useful for custom background."
+      "label": "t:sections.header.settings.header_bg_color.label",
+      "info": "t:sections.header.settings.header_bg_color.info"
     },
     {
       "type": "color",
       "id": "header_text_color",
-      "label": "Header text color override"
+      "label": "t:sections.header.settings.header_text_color.label"
     },
     {
       "type": "color",
       "id": "header_hover_color",
-      "label": "Nav link hover color",
+      "label": "t:sections.header.settings.header_hover_color.label",
       "default": "#000000"
     },
     {
       "type": "color",
       "id": "header_border_color",
-      "label": "Border color",
+      "label": "t:sections.header.settings.header_border_color.label",
       "default": "#e5e5e5"
     },
     {
@@ -1349,52 +1307,52 @@
       "max": 6,
       "step": 1,
       "unit": "px",
-      "label": "Border thickness",
+      "label": "t:sections.header.settings.header_border_thickness.label",
       "default": 1
     },
     {
       "type": "checkbox",
       "id": "enable_hover_underline",
       "default": true,
-      "label": "Animated hover underline on nav links"
+      "label": "t:sections.header.settings.enable_hover_underline.label"
     },
     {
       "type": "header",
-      "content": "Search"
+      "content": "t:sections.header.settings.search_header.content"
     },
     {
       "type": "select",
       "id": "search_style",
       "options": [
-        { "value": "modal", "label": "Icon opens modal (default)" },
-        { "value": "inline", "label": "Inline expandable search bar" }
+        { "value": "modal", "label": "t:sections.header.settings.search_style.options__1.label" },
+        { "value": "inline", "label": "t:sections.header.settings.search_style.options__2.label" }
       ],
       "default": "modal",
-      "label": "Search style"
+      "label": "t:sections.header.settings.search_style.label"
     },
     {
       "type": "header",
-      "content": "Icons & Utilities"
+      "content": "t:sections.header.settings.icons_utilities.content"
     },
     {
       "type": "checkbox",
       "id": "show_wishlist_icon",
       "default": false,
-      "label": "Show wishlist icon"
+      "label": "t:sections.header.settings.show_wishlist_icon.label"
     },
     {
       "type": "checkbox",
       "id": "enable_mini_cart",
       "default": false,
-      "label": "Enable mini cart drawer",
-      "info": "Clicking the cart icon opens a slide-in cart drawer instead of navigating to the cart page."
+      "label": "t:sections.header.settings.enable_mini_cart.label",
+      "info": "t:sections.header.settings.enable_mini_cart.info"
     },
     {
       "type": "checkbox",
       "id": "enable_account_dropdown",
       "default": false,
-      "label": "Account dropdown menu",
-      "info": "Shows a dropdown with account links on hover."
+      "label": "t:sections.header.settings.enable_account_dropdown.label",
+      "info": "t:sections.header.settings.enable_account_dropdown.info"
     },
     {
       "type": "checkbox",
@@ -1419,14 +1377,14 @@
     },
     {
       "type": "header",
-      "content": "Mobile"
+      "content": "t:sections.header.settings.mobile_header.content"
     },
     {
       "type": "checkbox",
       "id": "enable_mobile_bottom_nav",
       "default": false,
-      "label": "Show bottom navigation bar on mobile",
-      "info": "Adds a fixed bottom navigation bar with Home, Shop, Search, Account, and Cart."
+      "label": "t:sections.header.settings.enable_mobile_bottom_nav.label",
+      "info": "t:sections.header.settings.enable_mobile_bottom_nav.info"
     },
     {
       "type": "header",
