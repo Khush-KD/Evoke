@@ -2357,6 +2357,10 @@ input[type='checkbox'] {
     contain: none !important;
 }
 
+.header__account-dropdown {
+    position: relative !important;
+}
+
 /* Ensure the absolute dropdown aligns smoothly within view boundaries */
 .header__account-dropdown-menu {
     right: -10px !important;
@@ -2364,16 +2368,24 @@ input[type='checkbox'] {
 }
 
 /* ---- Account Dropdown Menu Caret ---- */
-.header__account-dropdown > a::after {
-    content: '';
-    display: inline-block;
-    margin-left: 4px;
-    width: 6px;
-    height: 6px;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: rotate(45deg) translateY(-2px);
-    transition: transform 0.2s ease;
+.header__account-dropdown-menu {
+    right: -1.5rem !important;
+    left: auto !important;
+    max-width: 95vw !important;
+    display: block !important;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header__account-dropdown:hover .header__account-dropdown-menu,
+.header__account-dropdown:focus-within .header__account-dropdown-menu {
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateY(0) !important;
 }
 
 .header__account-dropdown:hover > a::after,
