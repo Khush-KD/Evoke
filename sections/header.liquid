@@ -197,7 +197,6 @@
   /* Solid Color on Scroll Sticky Mode */
   {%- if section.settings.enable_solid_color_on_scroll -%}
   .section-header.scrolled .header-wrapper,
-  .header-wrapper[data-scrolled],
   .shopify-section-header-sticky .header-wrapper,
   .shopify-section-header-hidden .header-wrapper {
     background: {{ section.settings.scroll_header_bg_color }} !important;
@@ -948,8 +947,6 @@
       this.initTransparentHeader();
     }
 
-  this._headerWrapper = this.querySelector('.header-wrapper');
-
     setHeaderHeight() {
       document.documentElement.style.setProperty('--header-height', `${this.header.offsetHeight}px`);
     }
@@ -995,11 +992,8 @@
 
       if (scrollTop > 10) {
         this.header.classList.add('scrolled');
-        // Always track scroll state on the wrapper element
-        if (this._headerWrapper) this._headerWrapper.setAttribute('data-scrolled', '');
       } else {
         this.header.classList.remove('scrolled');
-        if (this._headerWrapper) this._headerWrapper.removeAttribute('data-scrolled');
       }
 
       if (this.predictiveSearch && this.predictiveSearch.isOpen) {
