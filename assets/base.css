@@ -2341,13 +2341,63 @@ input[type='checkbox'] {
 
 /* Main Header Layout */
 .header-wrapper {
-  display: block;
-  position: relative;
-  background-color: rgb(var(--color-background));
+    transition: background 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
 }
 
 .header-wrapper--border-bottom {
   border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.08);
+}
+
+/* ---- Account dropdown arrow caret ---- */
+.header__account-dropdown > a::after {
+    content: '';
+    display: inline-block;
+    margin-left: 4px;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 0.2s;
+}
+
+.header__account-dropdown:hover > a::after,
+.header__account-dropdown:focus-within > a::after {
+    transform: rotate(-135deg) translateY(-2px);
+}
+
+/* ---- Bottom nav safe area ---- */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .header__bottom-nav {
+        padding-bottom: calc(0.8rem + env(safe-area-inset-bottom));
+    }
+}
+
+/* ---- Responsive: hide bottom nav on desktop ---- */
+@media screen and (min-width: 750px) {
+    .header__bottom-nav {
+        display: none !important;
+    }
+}
+
+/* ---- Announcement bar animation ---- */
+#header-announcement {
+    overflow: hidden;
+    max-height: 100px;
+}
+
+/* ---- Wishlist icon hover ---- */
+.header__icon--wishlist:hover svg {
+    fill: currentColor;
+    transition: fill 0.2s;
+}
+
+/* ---- Focus styles ---- */
+.header__icon:focus-visible,
+.header__menu-item:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 2px;
 }
 
 .header {

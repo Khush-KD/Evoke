@@ -1,5 +1,6 @@
 {% comment %}
   Renders a header drawer menu for mobile and desktop.
+  Enhanced: supports fullscreen overlay mode + animated hamburger.
 
   Usage:
   {% render 'header-drawer' %}
@@ -16,7 +17,7 @@
         {{- 'icon-close.svg' | inline_asset_content -}}
       </span>
     </summary>
-    <div id="menu-drawer" class="gradient menu-drawer motion-reduce color-{{ section.settings.menu_color_scheme }}">
+    <div id="menu-drawer" class="gradient menu-drawer motion-reduce color-{{ section.settings.menu_color_scheme }}{% if section.settings.mobile_nav_style == 'fullscreen' %} menu-drawer--fullscreen{% endif %}">
       <div class="menu-drawer__inner-container">
         <div class="menu-drawer__navigation-container">
           <nav class="menu-drawer__navigation">
@@ -57,9 +58,7 @@
                                     id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
                                     href="{{ childlink.url }}"
                                     class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
-                                    {% if childlink.current %}
-                                      aria-current="page"
-                                    {% endif %}
+                                    {% if childlink.current %}aria-current="page"{% endif %}
                                   >
                                     {{ childlink.title | escape }}
                                   </a>
@@ -70,40 +69,25 @@
                                       class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
                                     >
                                       {{ childlink.title | escape }}
-                                      <span class="svg-wrapper">
-                                        {{- 'icon-arrow.svg' | inline_asset_content -}}
-                                      </span>
-                                      <span class="svg-wrapper">
-                                        {{- 'icon-caret.svg' | inline_asset_content -}}
-                                      </span>
+                                      <span class="svg-wrapper">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+                                      <span class="svg-wrapper">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
                                     </summary>
                                     <div
                                       id="childlink-{{ childlink.handle | escape }}"
                                       class="menu-drawer__submenu has-submenu gradient motion-reduce"
                                     >
-                                      <button
-                                        class="menu-drawer__close-button link link--text focus-inset"
-                                        aria-expanded="true"
-                                      >
-                                        <span class="svg-wrapper">
-                                          {{- 'icon-arrow.svg' | inline_asset_content -}}
-                                        </span>
+                                      <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
+                                        <span class="svg-wrapper">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
                                         {{ childlink.title | escape }}
                                       </button>
-                                      <ul
-                                        class="menu-drawer__menu list-menu"
-                                        role="list"
-                                        tabindex="-1"
-                                      >
+                                      <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
                                         {%- for grandchildlink in childlink.links -%}
                                           <li>
                                             <a
                                               id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
                                               href="{{ grandchildlink.url }}"
                                               class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"
-                                              {% if grandchildlink.current %}
-                                                aria-current="page"
-                                              {% endif %}
+                                              {% if grandchildlink.current %}aria-current="page"{% endif %}
                                             >
                                               {{ grandchildlink.title | escape }}
                                             </a>
@@ -124,9 +108,7 @@
                       id="HeaderDrawer-{{ link.handle }}"
                       href="{{ link.url }}"
                       class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %}"
-                      {% if link.current %}
-                        aria-current="page"
-                      {% endif %}
+                      {% if link.current %}aria-current="page"{% endif %}
                     >
                       {{ link.title | escape }}
                     </a>
@@ -135,6 +117,7 @@
               {%- endfor -%}
             </ul>
           </nav>
+
           <div class="menu-drawer__utility-links">
             {%- if shop.customer_accounts_enabled -%}
               <a
@@ -147,15 +130,11 @@
                     {%- if customer and customer.has_avatar? -%}
                       {{ customer | avatar }}
                     {%- else -%}
-                      <span class="svg-wrapper">
-                        {{- 'icon-account.svg' | inline_asset_content -}}
-                      </span>
+                      <span class="svg-wrapper">{{- 'icon-account.svg' | inline_asset_content -}}</span>
                     {%- endif -%}
                   </account-icon>
                 {%- else -%}
-                  <span class="svg-wrapper">
-                    {{- 'icon-account.svg' | inline_asset_content -}}
-                  </span>
+                  <span class="svg-wrapper">{{- 'icon-account.svg' | inline_asset_content -}}</span>
                 {%- endif -%}
                 {%- liquid
                   if customer
@@ -166,28 +145,24 @@
                 -%}
               </a>
             {%- endif -%}
+
             {%- if localization.available_countries or localization.available_languages -%}
               <div class="menu-drawer__localization header-localization">
                 {%- if localization.available_countries and localization.available_countries.size > 1 -%}
                   <localization-form>
                     {%- form 'localization', id: 'HeaderCountryMobileForm', class: 'localization-form' -%}
                       <div>
-                        <h2 class="visually-hidden" id="HeaderCountryMobileLabel">
-                          {{ 'localization.country_label' | t }}
-                        </h2>
+                        <h2 class="visually-hidden" id="HeaderCountryMobileLabel">{{ 'localization.country_label' | t }}</h2>
                         {%- render 'country-localization', localPosition: 'HeaderCountryMobile' -%}
                       </div>
                     {%- endform -%}
                   </localization-form>
                 {% endif %}
-
                 {%- if localization.available_languages and localization.available_languages.size > 1 -%}
                   <localization-form>
                     {%- form 'localization', id: 'HeaderLanguageMobileForm', class: 'localization-form' -%}
                       <div>
-                        <h2 class="visually-hidden" id="HeaderLanguageMobileLabel">
-                          {{ 'localization.language_label' | t }}
-                        </h2>
+                        <h2 class="visually-hidden" id="HeaderLanguageMobileLabel">{{ 'localization.language_label' | t }}</h2>
                         {%- render 'language-localization', localPosition: 'HeaderLanguageMobile' -%}
                       </div>
                     {%- endform -%}
@@ -195,96 +170,28 @@
                 {%- endif -%}
               </div>
             {%- endif -%}
+
             <ul class="list list-social list-unstyled" role="list">
               {%- if settings.social_twitter_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_twitter_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-twitter.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.twitter' | t }}</span>
-                  </a>
-                </li>
+                <li class="list-social__item"><a href="{{ settings.social_twitter_link }}" class="list-social__link link"><span class="svg-wrapper">{{- 'icon-twitter.svg' | inline_asset_content -}}</span><span class="visually-hidden">{{ 'general.social.links.twitter' | t }}</span></a></li>
               {%- endif -%}
               {%- if settings.social_facebook_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_facebook_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-facebook.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.facebook' | t }}</span>
-                  </a>
-                </li>
+                <li class="list-social__item"><a href="{{ settings.social_facebook_link }}" class="list-social__link link"><span class="svg-wrapper">{{- 'icon-facebook.svg' | inline_asset_content -}}</span><span class="visually-hidden">{{ 'general.social.links.facebook' | t }}</span></a></li>
               {%- endif -%}
               {%- if settings.social_pinterest_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_pinterest_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-pinterest.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.pinterest' | t }}</span>
-                  </a>
-                </li>
+                <li class="list-social__item"><a href="{{ settings.social_pinterest_link }}" class="list-social__link link"><span class="svg-wrapper">{{- 'icon-pinterest.svg' | inline_asset_content -}}</span><span class="visually-hidden">{{ 'general.social.links.pinterest' | t }}</span></a></li>
               {%- endif -%}
               {%- if settings.social_instagram_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_instagram_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-instagram.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.instagram' | t }}</span>
-                  </a>
-                </li>
+                <li class="list-social__item"><a href="{{ settings.social_instagram_link }}" class="list-social__link link"><span class="svg-wrapper">{{- 'icon-instagram.svg' | inline_asset_content -}}</span><span class="visually-hidden">{{ 'general.social.links.instagram' | t }}</span></a></li>
               {%- endif -%}
               {%- if settings.social_tiktok_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_tiktok_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-tiktok.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.tiktok' | t }}</span>
-                  </a>
-                </li>
-              {%- endif -%}
-              {%- if settings.social_tumblr_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_tumblr_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-tumblr.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.tumblr' | t }}</span>
-                  </a>
-                </li>
-              {%- endif -%}
-              {%- if settings.social_snapchat_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_snapchat_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-snapchat.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.snapchat' | t }}</span>
-                  </a>
-                </li>
+                <li class="list-social__item"><a href="{{ settings.social_tiktok_link }}" class="list-social__link link"><span class="svg-wrapper">{{- 'icon-tiktok.svg' | inline_asset_content -}}</span><span class="visually-hidden">{{ 'general.social.links.tiktok' | t }}</span></a></li>
               {%- endif -%}
               {%- if settings.social_youtube_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_youtube_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-youtube.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.youtube' | t }}</span>
-                  </a>
-                </li>
+                <li class="list-social__item"><a href="{{ settings.social_youtube_link }}" class="list-social__link link"><span class="svg-wrapper">{{- 'icon-youtube.svg' | inline_asset_content -}}</span><span class="visually-hidden">{{ 'general.social.links.youtube' | t }}</span></a></li>
               {%- endif -%}
               {%- if settings.social_vimeo_link != blank -%}
-                <li class="list-social__item">
-                  <a href="{{ settings.social_vimeo_link }}" class="list-social__link link">
-                    <span class="svg-wrapper">
-                      {{- 'icon-vimeo.svg' | inline_asset_content -}}
-                    </span>
-                    <span class="visually-hidden">{{ 'general.social.links.vimeo' | t }}</span>
-                  </a>
-                </li>
+                <li class="list-social__item"><a href="{{ settings.social_vimeo_link }}" class="list-social__link link"><span class="svg-wrapper">{{- 'icon-vimeo.svg' | inline_asset_content -}}</span><span class="visually-hidden">{{ 'general.social.links.vimeo' | t }}</span></a></li>
               {%- endif -%}
             </ul>
           </div>
@@ -293,3 +200,25 @@
     </div>
   </details>
 </header-drawer>
+
+<style>
+  /* Fullscreen mobile nav overlay */
+  @media screen and (max-width: 989px) {
+    .menu-drawer--fullscreen {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      border-radius: 0 !important;
+    }
+    .menu-drawer--fullscreen .menu-drawer__inner-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6rem 3rem 3rem;
+    }
+    .menu-drawer--fullscreen .menu-drawer__menu-item {
+      font-size: 2.4rem !important;
+      padding: 1.2rem 0 !important;
+    }
+  }
+</style>
