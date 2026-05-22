@@ -15,7 +15,7 @@
     }
   }
 
-  /* Email Signup Strip */
+  /* ?? Email Signup Strip ?? */
   .footer-signup-strip {
     background-color: {{ section.settings.signup_bg_color }};
     padding: {{ section.settings.signup_padding_top | times: 0.75 | round: 0 }}px 20px {{ section.settings.signup_padding_bottom | times: 0.75 | round: 0 }}px;
@@ -134,7 +134,7 @@
     font-size: 13px;
   }
 
-  /* Main Footer Dark Section */
+  /* ?? Main Footer Dark Section ?? */
   .footer-main {
     background-color: {{ section.settings.main_bg_color }};
     color: {{ section.settings.main_text_color }};
@@ -204,7 +204,7 @@
     height: 24px;
   }
 
-  /* Footer Bottom Bar */
+  /* ?? Footer Bottom Bar ?? */
   .footer-bottom {
     background-color: {{ section.settings.main_bg_color }};
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -265,7 +265,7 @@
     padding: 0;
   }
 
-  /* Copyright bar */
+  /* ?? Copyright bar ?? */
   .footer-bottom__copyright {
     max-width: 1200px;
     margin: 0 auto;
@@ -295,7 +295,7 @@
     color: #ffffff;
   }
 
-  /* Scroll-to-top divider */
+  /* ?? Scroll-to-top divider ?? */
   .footer-scroll-divider-wrap {
     background-color: {{ section.settings.main_bg_color }};
     padding: {{ section.settings.scroll_divider_padding | times: 0.75 | round: 0 }}px 20px;
@@ -373,22 +373,23 @@
     display: block;
   }
 
-  /* Scroll divider visibility */
-  {%- if section.settings.show_scroll_divider == false -%}
-    .footer-scroll-divider { display: none; }
-  {%- endif -%}
+  /* ?? Scroll divider visibility ?? */
+    {%- if section.settings.show_scroll_divider == false -%}
+      .footer-scroll-divider { display: none; }
+    {%- endif -%}
 
-  .footer-main {
-    padding-bottom: {{ section.settings.footer_main_bottom_spacing | times: 0.75 | round: 0 }}px;
-  }
-
-  @media screen and (min-width: 750px) {
     .footer-main {
-      padding-bottom: {{ section.settings.footer_main_bottom_spacing }}px;
+      /* spacing already defined above; override padding-bottom here */
+      padding-bottom: {{ section.settings.footer_main_bottom_spacing | times: 0.75 | round: 0 }}px;
     }
-  }
 
-  /* Responsive */
+    @media screen and (min-width: 750px) {
+      .footer-main {
+        padding-bottom: {{ section.settings.footer_main_bottom_spacing }}px;
+      }
+    }
+
+  /* ?? Responsive ?? */
   @media screen and (max-width: 749px) {
     .footer-signup-strip__container {
       flex-direction: column;
@@ -442,6 +443,8 @@
     }
   }
 {%- endstyle -%}
+
+
 
 {%- comment -%} Section 1: Email Signup Strip {%- endcomment -%}
 <footer class="footer" role="contentinfo">
@@ -507,91 +510,102 @@
     </div>
   </div>
 
-  {%- comment -%} Section 2: Dynamic Main Footer Blocks {%- endcomment -%}
+  {%- comment -%} Section 2: Main Footer {%- endcomment -%}
   <div class="footer-main">
     <div class="footer-main__container">
-      {%- for block in section.blocks -%}
-        <div class="footer-main__column footer-main__column--{{ block.type }}" {{ block.shopify_attributes }}>
-          {%- case block.type -%}
-            {%- when 'link_list' -%}
-              {%- if block.settings.heading != blank -%}
-                <h3 class="footer-main__column-title">{{ block.settings.heading }}</h3>
-              {%- endif -%}
-              {%- if block.settings.menu != blank -%}
-                {%- for link in block.settings.menu.links -%}
-                  <a href="{{ link.url }}" class="footer-main__link">{{ link.title }}</a>
-                {%- endfor -%}
-              {%- endif -%}
 
-            {%- when 'text' -%}
-              {%- if block.settings.heading != blank -%}
-                <h3 class="footer-main__column-title">{{ block.settings.heading }}</h3>
-              {%- endif -%}
-              {%- if block.settings.subtext != blank -%}
-                <div class="footer-main__text-contentR">
-                  {{ block.settings.subtext }}
-                </div>
-              {%- endif -%}
+      <div class="footer-main__column">
+        <h3 class="footer-main__column-title">{{ section.settings.column_1_title }}</h3>
+        {%- if section.settings.column_1_link_1_text != blank -%}
+          <a href="{{ section.settings.column_1_link_1_url }}" class="footer-main__link">{{ section.settings.column_1_link_1_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.column_1_link_2_text != blank -%}
+          <a href="{{ section.settings.column_1_link_2_url }}" class="footer-main__link">{{ section.settings.column_1_link_2_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.column_1_link_3_text != blank -%}
+          <a href="{{ section.settings.column_1_link_3_url }}" class="footer-main__link">{{ section.settings.column_1_link_3_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.column_1_link_4_text != blank -%}
+          <a href="{{ section.settings.column_1_link_4_url }}" class="footer-main__link">{{ section.settings.column_1_link_4_text }}</a>
+        {%- endif -%}
+      </div>
 
-            {%- when 'image' -%}
-              {%- if block.settings.image != blank -%}
-                <div class="footer-main__image-wrapper" style="max-width: {{ block.settings.image_width }}px;">
-                  {{ block.settings.image | image_url: width: 400 | image_tag: loading: 'lazy', class: 'footer-main__img' }}
-                </div>
-              {%- endif -%}
-              
-            {%- when 'brand_information' -%}
-              {%- if settings.brand_headline != blank -%}
-                <h3 class="footer-main__column-title">{{ settings.brand_headline }}</h3>
-              {%- endif -%}
-              {%- if settings.brand_description != blank -%}
-                <p class="footer-main__link">{{ settings.brand_description }}</p>
-              {%- endif -%}
-          {%- endcase -%}
-        </div>
-      {%- endfor -%}
+      <div class="footer-main__column">
+        <h3 class="footer-main__column-title">{{ section.settings.column_2_title }}</h3>
+        {%- if section.settings.column_2_link_1_text != blank -%}
+          <a href="{{ section.settings.column_2_link_1_url }}" class="footer-main__link">{{ section.settings.column_2_link_1_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.column_2_link_2_text != blank -%}
+          <a href="{{ section.settings.column_2_link_2_url }}" class="footer-main__link">{{ section.settings.column_2_link_2_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.column_2_link_3_text != blank -%}
+          <a href="{{ section.settings.column_2_link_3_url }}" class="footer-main__link">{{ section.settings.column_2_link_3_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.column_2_link_4_text != blank -%}
+          <a href="{{ section.settings.column_2_link_4_url }}" class="footer-main__link">{{ section.settings.column_2_link_4_text }}</a>
+        {%- endif -%}
+      </div>
 
-      {%- comment -%} Social Icons Column {%- endcomment -%}
+      <div class="footer-main__column">
+        <h3 class="footer-main__column-title">{{ section.settings.column_3_title }}</h3>
+        {%- if section.settings.column_3_link_1_text != blank -%}
+          <a href="{{ section.settings.column_3_link_1_url }}" class="footer-main__link">{{ section.settings.column_3_link_1_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.column_3_link_2_text != blank -%}
+          <a href="{{ section.settings.column_3_link_2_url }}" class="footer-main__link">{{ section.settings.column_3_link_2_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.column_3_link_3_text != blank -%}
+          <a href="{{ section.settings.column_3_link_3_url }}" class="footer-main__link">{{ section.settings.column_3_link_3_text }}</a>
+        {%- endif -%}
+      </div>
+
       <div class="footer-main__column">
         <h3 class="footer-main__column-title">{{ section.settings.social_column_title }}</h3>
         <div class="footer-main__social">
           {%- if section.settings.facebook_url != blank -%}
             <a href="{{ section.settings.facebook_url }}" class="footer-main__social-link" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
             </a>
           {%- endif -%}
           {%- if section.settings.instagram_url != blank -%}
             <a href="{{ section.settings.instagram_url }}" class="footer-main__social-link" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
             </a>
           {%- endif -%}
           {%- if section.settings.twitter_url != blank -%}
             <a href="{{ section.settings.twitter_url }}" class="footer-main__social-link" aria-label="Twitter / X" target="_blank" rel="noopener noreferrer">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
             </a>
           {%- endif -%}
         </div>
       </div>
+
     </div>
   </div>
 
   {%- comment -%} Scroll-to-top divider {%- endcomment -%}
-  <div class="footer-scroll-divider-wrap">
-    <div class="footer-scroll-divider">
-      <div class="footer-scroll-divider__line"></div>
-      <button
-        class="footer-scroll-top"
-        onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
-        aria-label="Back to top"
-        title="Back to top"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="18 15 12 9 6 15"></polyline>
-        </svg>
-      </button>
-      <div class="footer-scroll-divider__line"></div>
-    </div>
+<div class="footer-scroll-divider-wrap">
+  <div class="footer-scroll-divider">
+    <div class="footer-scroll-divider__line"></div>
+    <button
+      class="footer-scroll-top"
+      onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+      aria-label="Back to top"
+      title="Back to top"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
+    <div class="footer-scroll-divider__line"></div>
   </div>
+</div>
 
   {%- comment -%} Bottom bar: localization, payment, Follow on Shop, copyright {%- endcomment -%}
   <div class="footer-bottom">
@@ -888,6 +902,157 @@
       "id": "main_text_color",
       "label": "Text color",
       "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Column 1 — Shop"
+    },
+    {
+      "type": "text",
+      "id": "column_1_title",
+      "label": "Title",
+      "default": "Shop"
+    },
+    {
+      "type": "text",
+      "id": "column_1_link_1_text",
+      "label": "Link 1 text",
+      "default": "Tops"
+    },
+    {
+      "type": "url",
+      "id": "column_1_link_1_url",
+      "label": "Link 1 URL"
+    },
+    {
+      "type": "text",
+      "id": "column_1_link_2_text",
+      "label": "Link 2 text",
+      "default": "Tunics"
+    },
+    {
+      "type": "url",
+      "id": "column_1_link_2_url",
+      "label": "Link 2 URL"
+    },
+    {
+      "type": "text",
+      "id": "column_1_link_3_text",
+      "label": "Link 3 text",
+      "default": "Dresses"
+    },
+    {
+      "type": "url",
+      "id": "column_1_link_3_url",
+      "label": "Link 3 URL"
+    },
+    {
+      "type": "text",
+      "id": "column_1_link_4_text",
+      "label": "Link 4 text",
+      "default": "Sweatshirts"
+    },
+    {
+      "type": "url",
+      "id": "column_1_link_4_url",
+      "label": "Link 4 URL"
+    },
+    {
+      "type": "header",
+      "content": "Column 2 — Collections"
+    },
+    {
+      "type": "text",
+      "id": "column_2_title",
+      "label": "Title",
+      "default": "Collections"
+    },
+    {
+      "type": "text",
+      "id": "column_2_link_1_text",
+      "label": "Link 1 text",
+      "default": "Spring 2022"
+    },
+    {
+      "type": "url",
+      "id": "column_2_link_1_url",
+      "label": "Link 1 URL"
+    },
+    {
+      "type": "text",
+      "id": "column_2_link_2_text",
+      "label": "Link 2 text",
+      "default": "Summer 2022"
+    },
+    {
+      "type": "url",
+      "id": "column_2_link_2_url",
+      "label": "Link 2 URL"
+    },
+    {
+      "type": "text",
+      "id": "column_2_link_3_text",
+      "label": "Link 3 text",
+      "default": "Winter 2022"
+    },
+    {
+      "type": "url",
+      "id": "column_2_link_3_url",
+      "label": "Link 3 URL"
+    },
+    {
+      "type": "text",
+      "id": "column_2_link_4_text",
+      "label": "Link 4 text",
+      "default": "Fall 2022"
+    },
+    {
+      "type": "url",
+      "id": "column_2_link_4_url",
+      "label": "Link 2 URL"
+    },
+    {
+      "type": "header",
+      "content": "Column 3 — Information"
+    },
+    {
+      "type": "text",
+      "id": "column_3_title",
+      "label": "Title",
+      "default": "Information"
+    },
+    {
+      "type": "text",
+      "id": "column_3_link_1_text",
+      "label": "Link 1 text",
+      "default": "About"
+    },
+    {
+      "type": "url",
+      "id": "column_3_link_1_url",
+      "label": "Link 1 URL"
+    },
+    {
+      "type": "text",
+      "id": "column_3_link_2_text",
+      "label": "Link 2 text",
+      "default": "Contact"
+    },
+    {
+      "type": "url",
+      "id": "column_3_link_2_url",
+      "label": "Link 2 URL"
+    },
+    {
+      "type": "text",
+      "id": "column_3_link_3_text",
+      "label": "Link 3 text",
+      "default": "FAQ"
+    },
+    {
+      "type": "url",
+      "id": "column_3_link_3_url",
+      "label": "Link 3 URL"
     },
     {
       "type": "header",
