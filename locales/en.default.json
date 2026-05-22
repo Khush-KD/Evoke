@@ -298,7 +298,71 @@
             "cart_quantity_error_html": "You can only add {{ quantity }} of this item to your cart."
         },
         "footer": {
-            "payment": "Payment methods"
+            "name": "Footer",
+            "payment": "Payment methods",
+            "blocks": {
+                "link_list": {
+                    "name": "Menu",
+                    "settings": {
+                        "heading": {
+                            "label": "Heading",
+                            "default": "Quick links"
+                        },
+                        "menu": {
+                            "label": "Menu"
+                        }
+                    }
+                },
+                "brand_information": {
+                    "name": "Brand information",
+                    "settings": {
+                        "paragraph": {
+                            "content": "This block displays your brand headline and description configured across theme settings global variables."
+                        },
+                        "show_social": {
+                            "label": "Social media icons",
+                            "info": "Display matching links populated in your main settings portfolio."
+                        }
+                    }
+                },
+                "text": {
+                    "name": "Text",
+                    "settings": {
+                        "heading": {
+                            "label": "Heading",
+                            "default": "Our Mission"
+                        },
+                        "subtext": {
+                            "label": "Subtext",
+                            "default": "<p>Share contact information, localized store hours, or brief brand bio notes directly with your community.</p>"
+                        }
+                    }
+                }
+            },
+            "settings": {
+                "margin_top": {
+                    "label": "Top margin"
+                },
+                "enable_follow_on_shop": {
+                    "label": "Enable Follow on Shop",
+                    "info": "To allow storefront updates via consumer applications, ensure Shop Pay processes remain configured natively."
+                },
+                "enable_country_selector": {
+                    "label": "Enable country/region selector",
+                    "info": "Add options via your target Localization Markets settings panel."
+                },
+                "enable_language_selector": {
+                    "label": "Enable language selector",
+                    "info": "Introduce multiple storefront languages through system settings configuration panels."
+                },
+                "payment_enable": {
+                    "label": "Show payment icons"
+                },
+                "show_policy": {
+                    "label": "Show policy links",
+                    "info": "Pulls directly from Legal document provisions initialized in settings."
+                }
+            }
         },
         "featured_blog": {
             "view_all": "View all",
