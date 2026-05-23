@@ -75,6 +75,47 @@
     object-fit: cover;
     object-position: center center;
   }
+
+  /* Dynamic Block Level Overrides for Opacity, Containers, and Glassmorphism */
+  {%- for block in section.blocks -%}
+    /* Enforce block media overlay opacity behavior on mobile devices, overriding Dawn's mobile hidden rules */
+    #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
+      content: '' !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background-color: rgb(0,0,0) !important;
+      opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }} !important;
+      z-index: 2 !important;
+      display: block !important;
+      pointer-events: none !important;
+    }
+
+    {%- if block.settings.show_text_box == false -%}
+      #Slide-{{ section.id }}-{{ forloop.index }} .banner__box {
+        background: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      #Slide-{{ section.id }}-{{ forloop.index }} .banner__box .button--secondary {
+        --alpha-button-background: 0;
+      }
+    {%- endif -%}
+
+    {%- if block.settings.enable_glassmorphism and block.settings.show_text_box -%}
+      #Slide-{{ section.id }}-{{ forloop.index }} .banner__box {
+        background: rgba(255, 255, 255, {{ block.settings.container_opacity | divided_by: 100.0 }}) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+    {%- endif -%}
+  {%- endfor -%}
 {%- endstyle -%}
 
 <slideshow-component
@@ -158,29 +199,6 @@
     data-speed="{{ section.settings.change_slides_speed }}"
   >
     {%- for block in section.blocks -%}
-      {%- style -%}
-        /* Robust cross-device styling setup to guarantee mobile opacity execution */
-        #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgb(0,0,0);
-          opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
-          z-index: 2;
-          pointer-events: none;
-        }
-        {%- if block.settings.enable_glassmorphism and block.settings.show_text_box -%}
-          #Slide-{{ section.id }}-{{ forloop.index }} .banner__box {
-            background: rgba(255, 255, 255, {{ block.settings.container_opacity | divided_by: 100.0 }});
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-          }
-        {%- endif -%}
-      {%- endstyle -%}
       <div
         class="slideshow__slide grid__item grid--1-col slider__slide"
         id="Slide-{{ section.id }}-{{ forloop.index }}"
