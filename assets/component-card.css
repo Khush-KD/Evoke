@@ -592,4 +592,78 @@
   .grid__item:nth-child(8n) .product-card-wrapper:hover .shape--blob {
     clip-path: polygon(var(--shape--blob-5));
   }
+
+    /* Ensure the image container defines coordinates relative to absolute layout trees */
+    .card-wrapper .card__inner {
+        position: relative;
+    }
+
+    /* Quick Look absolute block setup */
+    .card__quick-look {
+        position: absolute;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translate(-50%, 12px);
+        width: calc(100% - 3rem);
+        z-index: 5;
+        opacity: 0;
+        visibility: hidden;
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    /* Slide up and fade in smoothly on card wrapper hover/active focus */
+    .product-card-wrapper:hover .card__quick-look,
+    .product-card-wrapper:focus-within .card__quick-look {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, 0);
+    }
+
+    /* Theme Store styled interaction interface button overrides */
+    .card__quick-look-btn {
+        margin: 0;
+        background-color: rgb(var(--color-background)) !important;
+        color: rgb(var(--color-foreground)) !important;
+        border: 1px solid rgba(var(--color-foreground), 0.08) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        font-size: 1.3rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.06rem;
+        min-height: 4.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: var(--buttons-radius, 0px);
+        transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card__quick-look-btn:hover {
+        background-color: rgb(var(--color-foreground)) !important;
+        color: rgb(var(--color-background)) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Smooth loader positioning for premium feel inside theme store templates */
+    .card__quick-look-btn .loading-spinner {
+        width: 1.8rem;
+        height: 1.8rem;
+        position: absolute;
+    }
+
+    /* Touch screens mobile responsive adjustments */
+    @media screen and (max-width: 749px) {
+        .card__quick-look {
+            bottom: 1rem;
+            width: calc(100% - 2rem);
+        }
+        /* Optional: keeps the quick add always accessible on smaller displays without explicit hover triggers */
+        .card__quick-look {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, 0);
+        }
+    }
+
 }
