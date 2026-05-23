@@ -21,11 +21,16 @@
   }
 
   {%- if section.settings.slide_height == 'adapt_image' and section.blocks.first.settings.image != blank -%}
+    {%- liquid
+      assign first_block = section.blocks.first
+      assign desktop_ratio = first_block.settings.image.aspect_ratio
+      assign mobile_ratio = first_block.settings.image_mobile.aspect_ratio | default: desktop_ratio
+    -%}
     @media screen and (max-width: 749px) {
       #Slider-{{ section.id }}::before,
       #Slider-{{ section.id }} .media::before,
       #Slider-{{ section.id }}:not(.banner--mobile-bottom) .banner__content::before {
-        padding-bottom: {{ 1 | divided_by: section.blocks.first.settings.image.aspect_ratio | times: 100 }}%;
+        padding-bottom: {{ 1 | divided_by: mobile_ratio | times: 100 }}%;
         content: '';
         display: block;
       }
@@ -34,7 +39,7 @@
     @media screen and (min-width: 750px) {
       #Slider-{{ section.id }}::before,
       #Slider-{{ section.id }} .media::before {
-        padding-bottom: {{ 1 | divided_by: section.blocks.first.settings.image.aspect_ratio | times: 100 }}%;
+        padding-bottom: {{ 1 | divided_by: desktop_ratio | times: 100 }}%;
         content: '';
         display: block;
       }
@@ -49,6 +54,26 @@
     height: 100%;
     object-fit: cover;
     z-index: 1;
+  }
+
+  /* Fixed Art-Direction Media Selectors to Prevent Zoom/Crop Glitches */
+  .slideshow__media picture {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .slideshow__media picture img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
   }
 {%- endstyle -%}
 
@@ -134,8 +159,18 @@
   >
     {%- for block in section.blocks -%}
       {%- style -%}
+        /* Robust cross-device styling setup to guarantee mobile opacity execution */
         #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgb(0,0,0);
           opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
+          z-index: 2;
+          pointer-events: none;
         }
         {%- if block.settings.enable_glassmorphism and block.settings.show_text_box -%}
           #Slide-{{ section.id }}-{{ forloop.index }} .banner__box {
