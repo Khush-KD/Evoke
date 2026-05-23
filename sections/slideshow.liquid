@@ -2,8 +2,25 @@
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
 {{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
 
-{%- if section.settings.slide_height == 'adapt_image' and section.blocks.first.settings.image != blank -%}
-  {%- style -%}
+{%- style -%}
+  #Slider-{{ section.id }} {
+    --padding-top: {{ section.settings.padding_top }}px;
+    --padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+
+  .section-{{ section.id }}-padding {
+    padding-top: calc(var(--padding-top) * 0.75);
+    padding-bottom: calc(var(--padding-bottom) * 0.75);
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: var(--padding-top);
+      padding-bottom: var(--padding-bottom);
+    }
+  }
+
+  {%- if section.settings.slide_height == 'adapt_image' and section.blocks.first.settings.image != blank -%}
     @media screen and (max-width: 749px) {
       #Slider-{{ section.id }}::before,
       #Slider-{{ section.id }} .media::before,
@@ -22,11 +39,21 @@
         display: block;
       }
     }
-  {%- endstyle -%}
-{%- endif -%}
+  {%- endif -%}
+
+  .slideshow__media-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+{%- endstyle -%}
 
 <slideshow-component
-  class="slider-mobile-gutter{% if section.settings.layout == 'grid' %} page-width{% endif %}{% if section.settings.show_text_below %} mobile-text-below{% endif %}"
+  class="slider-mobile-gutter section-{{ section.id }}-padding{% if section.settings.layout == 'grid' %} page-width{% endif %}{% if section.settings.show_text_below %} mobile-text-below{% endif %}"
   role="region"
   aria-roledescription="{{ 'sections.slideshow.carousel' | t }}"
   aria-label="{{ section.settings.accessibility_info | escape }}"
@@ -98,7 +125,7 @@
   {%- endif -%}
 
   <div
-    class="slideshow banner banner--{{ section.settings.slide_height }} grid grid--1-col slider slider--everywhere{% if section.settings.show_text_below %} banner--mobile-bottom{% endif %}{% if section.blocks.first.settings.image == blank %} slideshow--placeholder{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+    class="slideshow banner banner--{{ section.settings.slide_height }} grid grid--1-col slider slider--everywhere{% if section.settings.show_text_below %} banner--mobile-bottom{% endif %}{% if section.blocks.first.settings.image == blank and section.blocks.first.settings.video == blank %} slideshow--placeholder{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
     id="Slider-{{ section.id }}"
     aria-live="polite"
     aria-atomic="true"
@@ -106,11 +133,19 @@
     data-speed="{{ section.settings.change_slides_speed }}"
   >
     {%- for block in section.blocks -%}
-      <style>
+      {%- style -%}
         #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
           opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
         }
-      </style>
+        {%- if block.settings.enable_glassmorphism and block.settings.show_text_box -%}
+          #Slide-{{ section.id }}-{{ forloop.index }} .banner__box {
+            background: rgba(255, 255, 255, {{ block.settings.container_opacity | divided_by: 100.0 }});
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+          }
+        {%- endif -%}
+      {%- endstyle -%}
       <div
         class="slideshow__slide grid__item grid--1-col slider__slide"
         id="Slide-{{ section.id }}-{{ forloop.index }}"
@@ -120,8 +155,10 @@
         aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
         tabindex="-1"
       >
-        <div class="slideshow__media banner__media media{% if block.settings.image == blank %} placeholder{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}">
-          {%- if block.settings.image -%}
+        <div class="slideshow__media banner__media media{% if block.settings.image == blank and block.settings.video == blank %} placeholder{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}">
+          {%- if block.settings.video != blank -%}
+            {{ block.settings.video | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true, class: 'slideshow__media-video' }}
+          {%- elsif block.settings.image -%}
             {%- liquid
               assign height = block.settings.image.width | divided_by: block.settings.image.aspect_ratio | round
               if section.settings.image_behavior == 'ambient'
@@ -131,22 +168,28 @@
                 assign sizes = '100vw'
                 assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
               endif
+              
               assign fetch_priority = 'auto'
-              if section.index == 1
+              assign loading_attr = 'lazy'
+              if section.index == 1 and forloop.first
                 assign fetch_priority = 'high'
+                assign loading_attr = 'eager'
               endif
             -%}
-            {%- if forloop.first %}
-              {{
-                block.settings.image
-                | image_url: width: 3840
-                | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority
-              }}
+            {%- if block.settings.image_mobile != blank -%}
+              <picture>
+                <source media="(max-width: 749px)" srcset="{{ block.settings.image_mobile | image_url: width: 750 }}">
+                {{
+                  block.settings.image
+                  | image_url: width: 3840
+                  | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority, loading: loading_attr
+                }}
+              </picture>
             {%- else -%}
               {{
                 block.settings.image
                 | image_url: width: 3840
-                | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths
+                | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority, loading: loading_attr
               }}
             {%- endif -%}
           {%- else -%}
@@ -170,18 +213,32 @@
                 <p>{{ block.settings.subheading }}</p>
               </div>
             {%- endif -%}
-            {%- if block.settings.button_label != blank -%}
-              <div class="banner__buttons">
-                <a
-                  {% if block.settings.link %}
-                    href="{{ block.settings.link }}"
-                  {% else %}
-                    role="link" aria-disabled="true"
-                  {% endif %}
-                  class="button {% if block.settings.button_style_secondary %}button--secondary{% else %}button--primary{% endif %}"
-                >
-                  {{- block.settings.button_label | escape -}}
-                </a>
+            {%- if block.settings.button_label != blank or block.settings.button_label_2 != blank -%}
+              <div class="banner__buttons{% if block.settings.button_label != blank and block.settings.button_label_2 != blank %} banner__buttons--multiple{% endif %}">
+                {%- if block.settings.button_label != blank -%}
+                  <a
+                    {% if block.settings.link %}
+                      href="{{ block.settings.link }}"
+                    {% else %}
+                      role="link" aria-disabled="true"
+                    {% endif %}
+                    class="button {% if block.settings.button_style_secondary %}button--secondary{% else %}button--primary{% endif %}"
+                  >
+                    {{- block.settings.button_label | escape -}}
+                  </a>
+                {%- endif -%}
+                {%- if block.settings.button_label_2 != blank -%}
+                  <a
+                    {% if block.settings.link_2 %}
+                      href="{{ block.settings.link_2 }}"
+                    {% else %}
+                      role="link" aria-disabled="true"
+                    {% endif %}
+                    class="button {% if block.settings.button_style_secondary_2 %}button--secondary{% else %}button--primary{% endif %}"
+                  >
+                    {{- block.settings.button_label_2 | escape -}}
+                  </a>
+                {%- endif -%}
               </div>
             {%- endif -%}
           </div>
@@ -382,6 +439,30 @@
       "label": "t:sections.slideshow.settings.accessibility.label",
       "info": "t:sections.slideshow.settings.accessibility.info",
       "default": "t:sections.slideshow.settings.accessibility.default"
+    },
+    {
+      "type": "header",
+      "content": "Section Structural Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top Padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom Padding",
+      "default": 0
     }
   ],
   "blocks": [
@@ -391,9 +472,25 @@
       "limit": 5,
       "settings": [
         {
+          "type": "header",
+          "content": "Slide Media Setup"
+        },
+        {
           "type": "image_picker",
           "id": "image",
           "label": "t:sections.slideshow.blocks.slide.settings.image.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "Mobile Art-Direction Image",
+          "info": "Vertical format crop override specifically prioritized on mobile displays."
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Background Video Loop Clip",
+          "info": "Using a background video replaces static slide image elements seamlessly."
         },
         {
           "type": "range",
@@ -451,7 +548,7 @@
         },
         {
           "type": "header",
-          "content": "t:sections.slideshow.blocks.slide.settings.header_button.content"
+          "content": "Call-To-Action Button 1"
         },        
         {
           "type": "text",
@@ -469,6 +566,27 @@
           "type": "checkbox",
           "id": "button_style_secondary",
           "label": "t:sections.slideshow.blocks.slide.settings.secondary_style.label",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Call-To-Action Button 2"
+        },        
+        {
+          "type": "text",
+          "id": "button_label_2",
+          "label": "Button 2 Label", 
+          "info": "Leave blank to hide completely"
+        },
+        {
+          "type": "url",
+          "id": "link_2",
+          "label": "Button 2 Redirect URL"
+        },
+        {
+          "type": "checkbox",
+          "id": "button_style_secondary_2",
+          "label": "Use secondary outline styling",
           "default": false
         },
         {
@@ -570,6 +688,27 @@
           "id": "color_scheme",
           "label": "t:sections.all.colors.label",
           "default": "scheme-1"
+        },
+        {
+          "type": "header",
+          "content": "Glassmorphism Overlays"
+        },
+        {
+          "type": "checkbox",
+          "id": "enable_glassmorphism",
+          "default": false,
+          "label": "Enable Frosted Glass Effect",
+          "info": "Applies sleek backdrop blurring to container-enabled layouts"
+        },
+        {
+          "type": "range",
+          "id": "container_opacity",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "label": "Container Transparency Override",
+          "default": 85
         }
       ]
     }
