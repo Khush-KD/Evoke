@@ -1,1066 +1,528 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evoke Theme - Featured Collection Customizer & Quick View</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts for Premium Aesthetics -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet">
-  
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            serif: ['"Playfair Display"', 'serif'],
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              primary: '#121212',
-              secondary: '#555555',
-              accent: '#8c765c',
-              bgLight: '#fcfbf7',
-              border: '#e5e1d8',
-            }
-          }
-        }
-      }
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+{{ 'template-collection.css' | asset_url | stylesheet_tag }}
+
+{% if section.settings.image_shape == 'blob' %}
+  {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+{%- unless section.settings.quick_add == 'none' -%}
+  {{ 'quick-add.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{%- endunless -%}
+
+{%- if section.settings.quick_add == 'standard' -%}
+  <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{%- if section.settings.quick_add == 'bulk' -%}
+  <script src="{{ 'quick-add-bulk.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'quick-order-list.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
     }
-  </script>
-  <style>
-    /* Premium scrollbar styles */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #a1a1a1;
-    }
-    
-    /* Elegant hover effects */
-    .card-zoom-img {
-      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
-    }
-    .product-card-container:hover .card-zoom-img {
-      transform: scale(1.06);
-    }
-    
-    /* Quick Look Slide-Up */
-    .quick-look-btn {
-      transform: translateY(105%);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, opacity 0.2s ease;
-    }
-    .product-card-container:hover .quick-look-btn {
-      transform: translateY(0);
-    }
+  }
+{%- endstyle -%}
 
-    /* Secondary image swap */
-    .secondary-img {
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out;
-    }
-    .product-card-container:hover .secondary-img {
-      opacity: 1;
-    }
-  </style>
-</head>
-<body class="bg-[#faf9f5] font-sans text-brand-primary min-h-screen flex flex-col antialiased">
+{%- liquid
+  assign products_to_display = section.settings.collection.all_products_count
 
-  <!-- Header Banner -->
-  <header class="bg-brand-primary text-white py-3 px-6 text-center text-xs tracking-[0.2em] font-medium uppercase border-b border-white/10 flex justify-between items-center">
-    <div class="hidden md:block text-white/60">SHOPIFY THEME STORE COMPLIANT</div>
-    <div class="mx-auto md:mx-0 font-semibold">EVOKE THEME v1.0.0 — FEATURED COLLECTION DEVELOPER TOOL</div>
-    <a href="#code-doc" class="hidden md:inline-block px-3 py-1 bg-white/10 hover:bg-white/20 transition rounded text-[10px] tracking-wider">VIEW LIQUID GUIDE</a>
-  </header>
+  if section.settings.collection.all_products_count > section.settings.products_to_show
+    assign products_to_display = section.settings.products_to_show
+    assign more_in_collection = true
+  endif
 
-  <div class="flex-1 flex flex-col lg:flex-row min-h-0">
-    
-    <!-- LEFT SIDEBAR: THEME EDITOR CONTROLS -->
-    <aside class="w-full lg:w-96 bg-white border-b lg:border-b-0 lg:border-r border-brand-border p-6 overflow-y-auto shrink-0 flex flex-col">
-      <div class="mb-6 pb-4 border-b border-brand-border">
-        <h2 class="font-serif text-xl font-semibold tracking-wide text-brand-primary">Section Settings</h2>
-        <p class="text-xs text-brand-secondary mt-1">Simulate real Shopify Theme Admin customization options</p>
-      </div>
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  assign columns_desktop_int = section.settings.columns_desktop | plus: 0
+  assign show_mobile_slider = false
+  if section.settings.swipe_on_mobile and products_to_display > columns_mobile_int
+    assign show_mobile_slider = true
+  endif
 
-      <!-- Settings Form -->
-      <div class="space-y-6 flex-1 text-sm">
-        
-        <!-- Header Customizer -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">Section Header Title</label>
-          <input id="setting-title" type="text" value="New Arrivals" 
-                 class="w-full px-3 py-2 border border-brand-border rounded focus:outline-none focus:border-brand-accent transition"
-                 oninput="updateSectionSettings()">
+  assign max_columns_to_show = columns_mobile_int
+  if columns_desktop_int > columns_mobile_int
+    assign max_columns_to_show = columns_desktop_int
+  endif
+
+  assign show_desktop_slider = false
+  if section.settings.enable_desktop_slider and products_to_display > section.settings.columns_desktop
+    assign show_desktop_slider = true
+  endif
+-%}
+
+<div
+  class="color-{{ section.settings.color_scheme }} isolate gradient"
+>
+  <div
+    class="collection{% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %} section-{{ section.id }}-padding{% if section.settings.full_width %} collection--full-width{% endif %}"
+    id="collection-{{ section.id }}"
+    data-id="{{ section.id }}"
+  >
+    <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width{% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}">
+      {%- if section.settings.title != blank -%}
+        <h2 class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          {{ section.settings.title }}
+        </h2>
+      {%- endif -%}
+      {%- if section.settings.description != blank
+        or section.settings.show_description
+        and section.settings.collection.description != empty
+      -%}
+        <div class="collection__description {{ section.settings.description_style }} rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          {%- if section.settings.show_description -%}
+            {{ section.settings.collection.description }}
+          {%- else -%}
+            {{ section.settings.description -}}
+          {%- endif %}
         </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">Section Subtitle</label>
-          <textarea id="setting-description" rows="2" 
-                    class="w-full px-3 py-2 border border-brand-border rounded focus:outline-none focus:border-brand-accent transition"
-                    oninput="updateSectionSettings()">Curated pieces meticulously structured for modern life, designed to elevate your everyday wardrobe.</textarea>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">Header Alignment</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button onclick="setAlign('left')" class="align-btn py-1.5 px-3 border border-brand-primary bg-brand-primary text-white rounded text-xs">Left</button>
-            <button onclick="setAlign('center')" class="align-btn py-1.5 px-3 border border-brand-border hover:bg-gray-50 rounded text-xs">Center</button>
-            <button onclick="setAlign('right')" class="align-btn py-1.5 px-3 border border-brand-border hover:bg-gray-50 rounded text-xs">Right</button>
-          </div>
-        </div>
-
-        <!-- Grid Layout Control -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">Desktop Layout Grid</label>
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs text-brand-secondary">Columns on Desktop</span>
-            <span id="label-columns-desktop" class="font-semibold">4</span>
-          </div>
-          <input id="setting-columns-desktop" type="range" min="2" max="6" step="1" value="4" 
-                 class="w-full accent-brand-accent cursor-pointer"
-                 oninput="updateSectionSettings()">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">Mobile Layout</label>
-          <select id="setting-columns-mobile" class="w-full px-3 py-2 border border-brand-border rounded focus:outline-none focus:border-brand-accent"
-                  onchange="updateSectionSettings()">
-            <option value="1">1 Column</option>
-            <option value="2" selected>2 Columns (Standard Mobile)</option>
-          </select>
-        </div>
-
-        <!-- Layout Spacing -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">Layout Style</label>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="setting-full-width" class="rounded accent-brand-accent" onchange="updateSectionSettings()">
-              <span class="text-xs text-brand-secondary">Full width section padding</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="setting-secondary-hover" checked class="rounded accent-brand-accent" onchange="updateSectionSettings()">
-              <span class="text-xs text-brand-secondary">Show second image on hover</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="setting-show-rating" checked class="rounded accent-brand-accent" onchange="updateSectionSettings()">
-              <span class="text-xs text-brand-secondary">Show product rating</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Product Image Ratios -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">Image Aspect Ratio</label>
-          <select id="setting-image-ratio" class="w-full px-3 py-2 border border-brand-border rounded focus:outline-none focus:border-brand-accent"
-                  onchange="updateSectionSettings()">
-            <option value="portrait" selected>Portrait (3:4 Ratio)</option>
-            <option value="square">Square (1:1 Ratio)</option>
-            <option value="landscape">Landscape (16:9 Ratio)</option>
-          </select>
-        </div>
-
-        <!-- View All Button Style -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">"View All" Button Style</label>
-          <select id="setting-view-all" class="w-full px-3 py-2 border border-brand-border rounded focus:outline-none focus:border-brand-accent"
-                  onchange="updateSectionSettings()">
-            <option value="solid" selected>Solid Primary Button</option>
-            <option value="outline">Outline Secondary Button</option>
-            <option value="link">Underlined Text Link</option>
-          </select>
-        </div>
-
-        <!-- Quick Buy Modal Config -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-brand-secondary">Quick Buy Configuration</label>
-          <select id="setting-quick-add" class="w-full px-3 py-2 border border-brand-border rounded focus:outline-none focus:border-brand-accent"
-                  onchange="updateSectionSettings()">
-            <option value="hover" selected>Hover Over Image ("Quick Look" Button)</option>
-            <option value="static">Static Card Button</option>
-            <option value="none">Disabled</option>
-          </select>
-        </div>
-
-      </div>
-
-      <!-- Live Statistics / Theme Checklist -->
-      <div class="mt-6 pt-6 border-t border-brand-border text-xs text-brand-secondary">
-        <span class="font-semibold text-brand-primary uppercase tracking-wider block mb-2">OS 2.0 theme store requirements</span>
-        <ul class="space-y-1">
-          <li class="flex items-center gap-1.5"><span class="text-green-600">✓</span> JSON settings matched strictly with Dawn schema</li>
-          <li class="flex items-center gap-1.5"><span class="text-green-600">✓</span> Custom CSS isolated properly</li>
-          <li class="flex items-center gap-1.5"><span class="text-green-600">✓</span> Fully responsive grid design</li>
-        </ul>
-      </div>
-    </aside>
-
-    <!-- CENTER PREVIEW: THE INTERACTIVE SECTION -->
-    <main class="flex-1 overflow-y-auto flex flex-col">
-      
-      <!-- Interactive Sandbox Notice -->
-      <div class="bg-brand-bgLight border-b border-brand-border px-8 py-3 flex flex-wrap justify-between items-center text-xs gap-3">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="font-medium text-brand-primary">Live Interactive Theme Simulator</span>
-        </div>
-        <div class="text-brand-secondary">Hover over cards to see the <strong class="text-brand-accent">"Quick Look"</strong> slide-up.</div>
-      </div>
-
-      <!-- THE FEATURED COLLECTION SECTION (Liquid Emulated Container) -->
-      <section id="featured-collection-section" class="py-12 md:py-16 px-4 md:px-12 flex-1 max-w-full">
-        <div class="mx-auto" id="section-width-container">
-          
-          <!-- Heading Area -->
-          <div id="section-header" class="mb-10 text-left">
-            <h2 id="section-title-element" class="font-serif text-3xl md:text-4.5xl tracking-wide text-brand-primary mb-3">
-              New Arrivals
-            </h2>
-            <div id="section-desc-element" class="text-sm md:text-base text-brand-secondary max-w-2xl leading-relaxed">
-              Curated pieces meticulously structured for modern life, designed to elevate your everyday wardrobe.
-            </div>
-          </div>
-
-          <!-- Product Grid Container -->
-          <ul id="Product-Grid" class="grid gap-x-6 gap-y-10 grid-cols-2 md:grid-cols-4" role="list">
-            <!-- Dynamically populated product cards -->
-          </ul>
-
-          <!-- View All Button -->
-          <div id="view-all-container" class="mt-14 text-center">
-            <a href="#" id="view-all-button" class="inline-block transition font-medium tracking-widest uppercase text-xs">
-              View All Collection
-            </a>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- CODE & DESIGN DOCUMENTATION TAB -->
-      <section id="code-doc" class="bg-[#1f1e1a] text-stone-300 p-8 border-t border-stone-800">
-        <h3 class="font-serif text-2xl text-white mb-4">How to Integrate Into Your Evoke Theme</h3>
-        <p class="text-sm mb-6 max-w-3xl leading-relaxed text-stone-400">
-          We have generated this exact configuration using clean Shopify Liquid elements, modular BEM-structured CSS, and standard JavaScript APIs (compatible with theme store requirements). Follow the guidelines below to implement this:
-        </p>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-xs">
-          <!-- Step 1 -->
-          <div class="bg-black/40 p-5 rounded-lg border border-stone-800">
-            <h4 class="text-white font-semibold text-sm mb-2 flex items-center gap-2">
-              <span class="bg-brand-accent text-white px-2 py-0.5 rounded text-[10px]">1</span> 
-              card-product.liquid Updates
-            </h4>
-            <p class="mb-3 text-stone-400">Make sure your product card snippet includes the hover trigger element and standard quick add hook. Insert this in <code>snippets/card-product.liquid</code> near your media container:</p>
-            <pre class="bg-stone-900 p-3 rounded text-[11px] overflow-x-auto text-yellow-400">
-{%- if quick_add == 'standard' -%}
-  &lt;div class="quick-add no-js-hidden"&gt;
-    &lt;button
-      id="{{ product_card_id }}-button"
-      class="quick-add__submit button"
-      aria-haspopup="dialog"
-      aria-controls="QuickAdd-{{ card_product.id }}"
-      data-product-url="{{ card_product.url }}"
-    &gt;
-      {{ 'products.product.choose_options' | t }}
-    &lt;/button&gt;
-  &lt;/div&gt;
-{%- endif -%}</pre>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="bg-black/40 p-5 rounded-lg border border-stone-800">
-            <h4 class="text-white font-semibold text-sm mb-2 flex items-center gap-2">
-              <span class="bg-brand-accent text-white px-2 py-0.5 rounded text-[10px]">2</span>
-              Isolated CSS Styles
-            </h4>
-            <p class="mb-3 text-stone-400">Add isolated layout classes for transition dynamics to <code>assets/quick-add.css</code>:</p>
-            <pre class="bg-stone-900 p-3 rounded text-[11px] overflow-x-auto text-emerald-400">
-.card-wrapper:hover .quick-add {
-  transform: translateY(0);
-  opacity: 1;
-}
-.quick-add {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  right: 1.5rem;
-  transform: translateY(110%);
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}</pre>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- QUICK LOOK / QUICK VIEW POPUP MODAL -->
-  <div id="quick-view-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      
-      <!-- Backdrop Blur overlay -->
-      <div id="modal-overlay" class="fixed inset-0 bg-brand-primary/60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeQuickView()"></div>
-
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-      <!-- Modal panel container -->
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-brand-border">
-        
-        <!-- Close Button -->
-        <button onclick="closeQuickView()" class="absolute right-4 top-4 z-10 p-2 text-brand-primary hover:text-brand-accent transition" aria-label="Close modal">
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-
-        <div class="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
-          
-          <!-- Left Panel: Large Media Gallery -->
-          <div class="space-y-4">
-            <div class="relative bg-brand-bgLight border border-brand-border rounded overflow-hidden aspect-[3/4]">
-              <!-- Main Image -->
-              <img id="modal-product-img" src="" alt="Main Product Image" class="w-full h-full object-cover object-top transition duration-500">
-              
-              <!-- Sale Badge -->
-              <span id="modal-sale-badge" class="absolute top-4 left-4 bg-brand-accent text-white text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded">
-                Sale
-              </span>
-            </div>
-            
-            <!-- Thumbnail gallery -->
-            <div id="modal-thumbnails" class="grid grid-cols-4 gap-3">
-              <!-- Thumbnail templates will be rendered here -->
-            </div>
-          </div>
-
-          <!-- Right Panel: Compact product purchase details -->
-          <div class="flex flex-col justify-between py-1">
-            <div>
-              <span id="modal-product-vendor" class="text-xs uppercase tracking-[0.22em] text-brand-secondary block mb-1">
-                BRAND VENDOR
-              </span>
-              <h2 id="modal-product-title" class="font-serif text-2xl md:text-3xl tracking-wide text-brand-primary mb-3">
-                Classic Silk Shirt
-              </h2>
-              
-              <!-- Review Stars -->
-              <div class="flex items-center gap-1.5 mb-4">
-                <div class="flex text-amber-500">
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" opacity="0.3"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                </div>
-                <span class="text-xs text-brand-secondary" id="modal-reviews-count">(42 reviews)</span>
-              </div>
-
-              <!-- Price Box -->
-              <div class="mb-5 pb-5 border-b border-brand-border">
-                <span id="modal-sale-price" class="text-xl font-semibold text-brand-accent">$89.00</span>
-                <span id="modal-compare-price" class="text-sm line-through text-brand-secondary ml-2">$120.00</span>
-                <span id="modal-regular-price" class="text-xl font-semibold text-brand-primary hidden">$120.00</span>
-                <div class="text-[10px] text-brand-secondary mt-1 tracking-wider uppercase">Taxes included. Free Shipping across North America.</div>
-              </div>
-
-              <!-- Compact Product Info description -->
-              <p id="modal-product-desc" class="text-xs md:text-sm text-brand-secondary leading-relaxed mb-6">
-                Premium-crafted clothing constructed with fine fabrics designed with luxury style and everyday accessibility.
-              </p>
-
-              <!-- Color variant Swatches -->
-              <div class="mb-5">
-                <span class="text-xs uppercase tracking-wider font-semibold text-brand-secondary block mb-2.5">
-                  Color: <span id="selected-color-label" class="text-brand-primary font-normal">Champagne</span>
-                </span>
-                <div id="color-swatches-container" class="flex gap-3">
-                  <!-- Color buttons generated dynamically -->
-                </div>
-              </div>
-
-              <!-- Size pills -->
-              <div class="mb-6">
-                <span class="text-xs uppercase tracking-wider font-semibold text-brand-secondary block mb-2.5">
-                  Size: <span id="selected-size-label" class="text-brand-primary font-normal">M</span>
-                </span>
-                <div id="size-pills-container" class="flex flex-wrap gap-2">
-                  <!-- Size buttons generated dynamically -->
-                </div>
-              </div>
-
-              <!-- Quantity Selector -->
-              <div class="mb-6">
-                <span class="text-xs uppercase tracking-wider font-semibold text-brand-secondary block mb-2.5">Quantity</span>
-                <div class="flex items-center w-32 border border-brand-border rounded overflow-hidden bg-brand-bgLight">
-                  <button onclick="changeQty(-1)" class="w-10 h-10 flex items-center justify-center text-brand-primary hover:bg-gray-100 transition font-bold" aria-label="Decrease quantity">
-                    -
-                  </button>
-                  <input type="number" id="purchase-qty" value="1" min="1" max="10" readonly
-                         class="w-12 h-10 text-center border-x border-brand-border bg-white text-brand-primary text-sm font-semibold focus:outline-none">
-                  <button onclick="changeQty(1)" class="w-10 h-10 flex items-center justify-center text-brand-primary hover:bg-gray-100 transition font-bold" aria-label="Increase quantity">
-                    +
-                  </button>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Add to Cart CTA -->
-            <div>
-              <button onclick="addToCartTrigger()" class="w-full py-4 bg-brand-primary hover:bg-[#252525] active:bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold transition rounded shadow-lg flex items-center justify-center gap-2">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                </svg>
-                <span>Add to Cart</span>
-              </button>
-              <button onclick="closeQuickView()" class="w-full mt-2.5 text-center text-xs text-brand-secondary hover:underline py-1">
-                View Full Details page
-              </button>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
+      {%- endif -%}
     </div>
-  </div>
 
-  <!-- SLIDE-IN MINI CART DRAWER -->
-  <div id="cart-drawer-container" class="fixed inset-0 z-50 overflow-hidden hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-    <div class="absolute inset-0 overflow-hidden">
-      <!-- Overlay shadow background -->
-      <div id="cart-drawer-overlay" onclick="toggleCartDrawer(false)" class="absolute inset-0 bg-brand-primary/50 transition-opacity"></div>
+    <slider-component class="slider-mobile-gutter{% if section.settings.full_width %} slider-component-full-width{% endif %}{% if show_mobile_slider == false %} page-width{% endif %}{% if show_desktop_slider == false and section.settings.full_width == false %} page-width-desktop{% endif %}{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+      <ul
+        id="Slider-{{ section.id }}"
+        data-id="{{ section.id }}"
+        class="grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop{% if section.settings.collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ section.settings.columns_mobile }}-col-tablet-down{% endif %}{% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
+        role="list"
+        aria-label="{{ 'general.slider.name' | t }}"
+      >
+        {% assign skip_card_product_styles = false %}
 
-      <div class="pointer-events-none fixed inset-y-right-0 right-0 flex max-w-full pl-10">
-        <div id="cart-drawer" class="pointer-events-auto w-screen max-w-md transform transition-transform duration-500 translate-x-full bg-white flex flex-col h-full shadow-2xl border-l border-brand-border">
-          
-          <!-- Cart Drawer Header -->
-          <div class="px-6 py-5 border-b border-brand-border flex items-center justify-between">
-            <h2 class="font-serif text-lg font-semibold tracking-wide text-brand-primary">Your Shopping Bag</h2>
-            <button onclick="toggleCartDrawer(false)" class="p-2 text-brand-primary hover:text-brand-accent transition" aria-label="Close cart">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Cart Drawer Body List -->
-          <div class="flex-1 overflow-y-auto px-6 py-4 space-y-6" id="cart-items-container">
-            <!-- Dynamic items rendered here -->
-          </div>
-
-          <!-- Cart Drawer Footer Summary -->
-          <div class="px-6 py-5 border-t border-brand-border bg-brand-bgLight space-y-4">
-            <div class="flex justify-between items-center text-sm">
-              <span class="font-semibold text-brand-primary">Subtotal</span>
-              <span id="cart-subtotal" class="font-bold text-lg text-brand-primary">$0.00</span>
-            </div>
-            <p class="text-xs text-brand-secondary leading-relaxed">
-              Shipping, taxes, and discounts calculated at checkout. Curated premium packaging is included with every order.
-            </p>
-            <div class="space-y-2">
-              <a href="#" onclick="alert('Proceeding to Simulated Checkout!')" class="w-full py-4 bg-brand-primary hover:bg-[#252525] text-white text-xs uppercase tracking-[0.2em] font-semibold text-center block rounded transition shadow">
-                Check Out Securely
-              </a>
-              <a href="#" onclick="toggleCartDrawer(false)" class="w-full text-center text-xs text-brand-accent hover:underline block py-1.5">
-                Continue Shopping
-              </a>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Notification Toast for Added Item -->
-  <div id="toast-notif" class="fixed bottom-6 right-6 z-50 transform translate-y-12 opacity-0 transition duration-300 pointer-events-none">
-    <div class="bg-brand-primary text-white px-5 py-4 rounded-lg shadow-xl flex items-center gap-3 border border-brand-accent/20">
-      <div class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></div>
-      <span class="text-xs tracking-wider font-semibold uppercase">Item added to your basket</span>
-    </div>
-  </div>
-
-  <!-- JAVASCRIPT STATE ENGINE -->
-  <script>
-    // 1. Hardcoded high-quality Mock Product Data matching modern fashion themes
-    const mockProducts = [
-      {
-        id: 1,
-        title: "Luna Silk Slip Dress",
-        vendor: "EVOKE STUDIO",
-        regularPrice: 120.00,
-        salePrice: 89.00,
-        onSale: true,
-        compareAtPrice: 120.00,
-        images: [
-          "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
-          "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80&w=600"
-        ],
-        colors: [
-          { name: "Champagne", value: "#e8d8c8" },
-          { name: "Emerald Green", value: "#1e3d2f" },
-          { name: "Midnight Black", value: "#121212" }
-        ],
-        sizes: ["XS", "S", "M", "L", "XL"],
-        rating: 4.8,
-        reviewsCount: 124,
-        desc: "An elegantly structured slip dress, crafted with lightweight premium Mulberry silk for a drape that flatters the silhouette effortlessly."
-      },
-      {
-        id: 2,
-        title: "Structured Wool Blazer",
-        vendor: "EVOKE STUDIO",
-        regularPrice: 185.00,
-        salePrice: null,
-        onSale: false,
-        compareAtPrice: null,
-        images: [
-          "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=600",
-          "https://images.unsplash.com/photo-1548624149-f7b31568e549?auto=format&fit=crop&q=80&w=600"
-        ],
-        colors: [
-          { name: "Oatmeal", value: "#e0d6c8" },
-          { name: "Charcoal Grey", value: "#4e4f50" }
-        ],
-        sizes: ["S", "M", "L", "XL"],
-        rating: 4.9,
-        reviewsCount: 82,
-        desc: "Tailored to perfection with padded shoulders, a peak lapel collar, and natural horn button detailing. Perfect for transition season styling."
-      },
-      {
-        id: 3,
-        title: "Classic Leather Trench",
-        vendor: "STUDIO SIGNATURE",
-        regularPrice: 350.00,
-        salePrice: 299.00,
-        onSale: true,
-        compareAtPrice: 350.00,
-        images: [
-          "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=600",
-          "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=600"
-        ],
-        colors: [
-          { name: "Tan Brown", value: "#995a3c" },
-          { name: "Onyx Black", value: "#1a1a1a" }
-        ],
-        sizes: ["XS", "S", "M", "L"],
-        rating: 4.7,
-        reviewsCount: 45,
-        desc: "Handcrafted with premium butter-soft vegan leather. Double-breasted tailored structure featuring a wide belt for waist definition."
-      },
-      {
-        id: 4,
-        title: "Ribbed Cashmere Sweater",
-        vendor: "EVOKE STUDIO",
-        regularPrice: 140.00,
-        salePrice: null,
-        onSale: false,
-        compareAtPrice: null,
-        images: [
-          "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=600",
-          "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&q=80&w=600"
-        ],
-        colors: [
-          { name: "Cream", value: "#f7f5ee" },
-          { name: "Soft Sage", value: "#9da197" },
-          { name: "Dusty Rose", value: "#c4a3a6" }
-        ],
-        sizes: ["S", "M", "L"],
-        rating: 4.9,
-        reviewsCount: 210,
-        desc: "100% pure Himalayan cashmere. Fine gauge knit texture with full-ribbed details offering outstanding insulation warmth and divine softness."
-      },
-      {
-        id: 5,
-        title: "Suede Ankle Boots",
-        vendor: "FOOTWEAR CO.",
-        regularPrice: 210.00,
-        salePrice: 168.00,
-        onSale: true,
-        compareAtPrice: 210.00,
-        images: [
-          "https://images.unsplash.com/photo-1535043934128-cf0b28d52f95?auto=format&fit=crop&q=80&w=600",
-          "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=600"
-        ],
-        colors: [
-          { name: "Taupe", value: "#b5a699" },
-          { name: "Espresso", value: "#3d2d25" }
-        ],
-        sizes: ["6", "7", "8", "9", "10"],
-        rating: 4.6,
-        reviewsCount: 56,
-        desc: "Designed with an elegant block heel and a modern square toe. Constructed in Italy with waterproof premium splitsuede leather."
-      }
-    ];
-
-    // Global application state
-    let activeProduct = null;
-    let selectedColor = "";
-    let selectedSize = "";
-    let selectedQty = 1;
-    let cart = [];
-    let activeHeaderAlign = "left";
-
-    // 2. Initial Setup
-    window.onload = function() {
-      renderProductGrid();
-      updateSectionSettings();
-    };
-
-    // Render Product Grid based on customizer choices
-    function renderProductGrid() {
-      const grid = document.getElementById('Product-Grid');
-      grid.innerHTML = '';
-      
-      const columnsDesktop = document.getElementById('setting-columns-desktop').value;
-      const columnsMobile = document.getElementById('setting-columns-mobile').value;
-      const imageRatio = document.getElementById('setting-image-ratio').value;
-      const quickAddStyle = document.getElementById('setting-quick-add').value;
-      const showRating = document.getElementById('setting-show-rating').checked;
-      const secondaryHover = document.getElementById('setting-secondary-hover').checked;
-
-      // Adjust column styles
-      grid.className = `grid gap-x-6 gap-y-10`;
-      
-      // Desktop grid class mapping
-      let desktopColClass = 'md:grid-cols-4';
-      if (columnsDesktop == 2) desktopColClass = 'md:grid-cols-2';
-      else if (columnsDesktop == 3) desktopColClass = 'md:grid-cols-3';
-      else if (columnsDesktop == 5) desktopColClass = 'md:grid-cols-5';
-      else if (columnsDesktop == 6) desktopColClass = 'md:grid-cols-6';
-      
-      // Mobile grid class mapping
-      let mobileColClass = 'grid-cols-2';
-      if (columnsMobile == 1) mobileColClass = 'grid-cols-1';
-
-      grid.classList.add(desktopColClass, mobileColClass);
-
-      // Loop and create cards
-      mockProducts.forEach(product => {
-        const hasSale = product.onSale;
-        const mainImg = product.images[0];
-        const hoverImg = product.images[1] || product.images[0];
-
-        // Aspect ratio utility
-        let ratioClass = 'aspect-[3/4]';
-        if (imageRatio === 'square') ratioClass = 'aspect-square';
-        if (imageRatio === 'landscape') ratioClass = 'aspect-video';
-
-        // Render card
-        const cardLi = document.createElement('li');
-        cardLi.className = 'product-card-container group flex flex-col relative';
-        
-        cardLi.innerHTML = `
-          <!-- Image Wrapper -->
-          <div class="relative w-full ${ratioClass} bg-brand-bgLight rounded overflow-hidden border border-brand-border select-none">
-            
-            <!-- Sale/Out of stock Badge -->
-            ${hasSale ? `<span class="absolute top-3 left-3 z-10 bg-brand-accent text-white text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded shadow-sm">Sale</span>` : ''}
-            
-            <!-- Primary Image -->
-            <img src="${mainImg}" alt="${product.title}" class="card-zoom-img w-full h-full object-cover object-top absolute inset-0">
-            
-            <!-- Secondary Hover Image -->
-            ${secondaryHover ? `<img src="${hoverImg}" alt="${product.title} Alternate" class="secondary-img w-full h-full object-cover object-top absolute inset-0">` : ''}
-
-            <!-- Quick Add Hover Overlay Button -->
-            ${quickAddStyle === 'hover' ? `
-              <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <button onclick="openQuickView(${product.id})" class="quick-look-btn w-full py-3 px-4 bg-white hover:bg-brand-primary hover:text-white text-brand-primary text-[10px] font-bold uppercase tracking-[0.2em] rounded shadow-xl backdrop-blur-sm bg-white/95">
-                  Quick Look
-                </button>
-              </div>
-            ` : ''}
-          </div>
-
-          <!-- Product Metadata Info Block -->
-          <div class="mt-4 flex flex-col flex-1">
-            <span class="text-[10px] uppercase tracking-[0.2em] text-brand-secondary mb-1">
-              ${product.vendor}
+        {%- if section.settings.collection.products.size > 0 -%}
+          {% assign lazy_load = false %}
+          {% paginate section.settings.collection.products by section.settings.products_to_show %}
+            {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+              {% if lazy_load == false and forloop.index > max_columns_to_show %}
+                {% assign lazy_load = true %}
+              {% endif %}
+              <li
+                id="Slide-{{ section.id }}-{{ forloop.index }}"
+                class="grid__item{% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                {% if settings.animations_reveal_on_scroll %}
+                  data-cascade
+                  style="--animation-order: {{ forloop.index }};"
+                {% endif %}
+              >
+                {% render 'card-product',
+                  card_product: product,
+                  media_aspect_ratio: section.settings.image_ratio,
+                  image_shape: section.settings.image_shape,
+                  lazy_load: lazy_load,
+                  show_secondary_image: section.settings.show_secondary_image,
+                  show_vendor: section.settings.show_vendor,
+                  show_rating: section.settings.show_rating,
+                  skip_styles: skip_card_product_styles,
+                  section_id: section.id,
+                  quick_add: section.settings.quick_add
+                %}
+              </li>
+              {%- assign skip_card_product_styles = true -%}
+            {%- endfor -%}
+          {% endpaginate %}
+        {%- else -%}
+          {%- for i in (1..section.settings.columns_desktop) -%}
+            <li
+              class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+              {% if settings.animations_reveal_on_scroll %}
+                data-cascade
+                style="--animation-order: {{ forloop.index }};"
+              {% endif %}
+            >
+              {% liquid
+                assign ridx = forloop.rindex
+                case ridx
+                  when 5
+                    assign ridx = 1
+                  when 6
+                    assign ridx = 2
+                endcase
+              %}
+              {%- assign placeholder_image = 'product-apparel-' | append: ridx -%}
+              {% render 'card-product',
+                show_vendor: section.settings.show_vendor,
+                media_aspect_ratio: section.settings.image_ratio,
+                image_shape: section.settings.image_shape,
+                lazy_load: false,
+                placeholder_image: placeholder_image
+              %}
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+      {%- if show_mobile_slider or show_desktop_slider -%}
+        <div class="slider-buttons">
+          <button
+            type="button"
+            class="slider-button slider-button--prev"
+            name="previous"
+            aria-label="{{ 'general.slider.previous_slide' | t }}"
+            aria-controls="Slider-{{ section.id }}"
+          >
+            <span class="svg-wrapper">
+              {{- 'icon-caret.svg' | inline_asset_content -}}
             </span>
-            <h3 class="font-serif text-base tracking-wide text-brand-primary mb-1 group-hover:text-brand-accent transition duration-200">
-              <a href="#" onclick="openQuickView(${product.id}); return false;">${product.title}</a>
-            </h3>
-
-            <!-- Review ratings -->
-            ${showRating ? `
-              <div class="flex items-center gap-1 mb-2">
-                <div class="flex text-amber-500">
-                  <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24" opacity="0.3"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                </div>
-                <span class="text-[10px] text-brand-secondary">(${product.reviewsCount})</span>
-              </div>
-            ` : ''}
-
-            <!-- Price displays -->
-            <div class="mt-auto pt-1 flex items-baseline gap-2">
-              ${hasSale ? `
-                <span class="text-sm font-semibold text-brand-accent">$${product.salePrice.toFixed(2)}</span>
-                <span class="text-xs text-brand-secondary line-through">$${product.compareAtPrice.toFixed(2)}</span>
-              ` : `
-                <span class="text-sm font-semibold text-brand-primary">$${product.regularPrice.toFixed(2)}</span>
-              `}
-            </div>
-
-            <!-- Static Quick Add option support -->
-            ${quickAddStyle === 'static' ? `
-              <button onclick="openQuickView(${product.id})" class="mt-4 w-full py-2.5 border border-brand-primary hover:bg-brand-primary hover:text-white text-brand-primary text-xs font-semibold uppercase tracking-wider rounded transition">
-                Choose Options
-              </button>
-            ` : ''}
+          </button>
+          <div class="slider-counter caption">
+            <span class="slider-counter--current">1</span>
+            <span aria-hidden="true"> / </span>
+            <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+            <span class="slider-counter--total">{{ products_to_display }}</span>
           </div>
-        `;
-        grid.appendChild(cardLi);
-      });
+          <button
+            type="button"
+            class="slider-button slider-button--next"
+            name="next"
+            aria-label="{{ 'general.slider.next_slide' | t }}"
+            aria-controls="Slider-{{ section.id }}"
+          >
+            <span class="svg-wrapper">
+              {{- 'icon-caret.svg' | inline_asset_content -}}
+            </span>
+          </button>
+        </div>
+      {%- endif -%}
+    </slider-component>
+
+    {%- if section.settings.show_view_all and more_in_collection -%}
+      <div class="center collection__view-all{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        <a
+          href="{{ section.settings.collection.url }}"
+          class="{% if section.settings.view_all_style == 'link' %}link underlined-link{% elsif section.settings.view_all_style == 'solid' %}button{% else %}button button--secondary{% endif %}"
+          aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: section.settings.collection.title | escape }}"
+        >
+          {{ 'sections.featured_collection.view_all' | t }}
+        </a>
+      </div>
+    {%- endif -%}
+    {% if section.settings.image_shape == 'arch' %}
+      {{ 'mask-arch.svg' | inline_asset_content }}
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.featured-collection.name",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:sections.featured-collection.settings.collection.label"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 25,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.featured-collection.settings.products_to_show.label"
+    },     
+    {
+      "type": "header",
+      "content": "t:sections.featured-collection.settings.header_text.content"
+    },   
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "default": "t:sections.featured-collection.settings.title.default",
+      "label": "t:sections.featured-collection.settings.title.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        },
+        {
+          "value": "hxl",
+          "label": "t:sections.all.heading_size.options__4.label"
+        },
+        {
+          "value": "hxxl",
+          "label": "t:sections.all.heading_size.options__5.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:sections.featured-collection.settings.description.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "t:sections.featured-collection.settings.show_description.label",
+      "default": false   
+    },
+    {
+      "type": "select",
+      "id": "description_style",
+      "label": "t:sections.featured-collection.settings.description_style.label",
+      "options": [
+        {
+          "value": "body",
+          "label": "t:sections.featured-collection.settings.description_style.options__1.label"
+        },
+        {
+          "value": "subtitle",
+          "label": "t:sections.featured-collection.settings.description_style.options__2.label"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:sections.featured-collection.settings.description_style.options__3.label"
+        }
+      ],
+      "default": "body"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.featured-collection.settings.header_collection.content"
+    },    
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.featured-collection.settings.columns_desktop.label"
+    },
+        {
+      "type": "checkbox",
+      "id": "enable_desktop_slider",
+      "label": "t:sections.featured-collection.settings.enable_desktop_slider.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "t:sections.featured-collection.settings.full_width.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "default": true,
+      "label": "t:sections.featured-collection.settings.show_view_all.label",
+      "info": "t:sections.featured-collection.settings.show_view_all.info"
+    },
+    {
+      "type": "select",
+      "id": "view_all_style",
+      "label": "t:sections.featured-collection.settings.view_all_style.label",
+      "options": [
+        {
+          "value": "link",
+          "label": "t:sections.featured-collection.settings.view_all_style.options__1.label"
+        },
+        {
+          "value": "outline",
+          "label": "t:sections.featured-collection.settings.view_all_style.options__2.label"
+        },
+        {
+          "value": "solid",
+          "label": "t:sections.featured-collection.settings.view_all_style.options__3.label"
+        }
+      ],
+      "default": "solid"
+    }, 
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "info": "t:sections.all.colors.has_cards_info",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.featured-collection.settings.header.content"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "t:sections.featured-collection.settings.image_ratio.options__1.label"
+        },
+        {
+          "value": "portrait",
+          "label": "t:sections.featured-collection.settings.image_ratio.options__2.label"
+        },
+        {
+          "value": "square",
+          "label": "t:sections.featured-collection.settings.image_ratio.options__3.label"
+        }
+      ],
+      "default": "adapt",
+      "label": "t:sections.featured-collection.settings.image_ratio.label"
+    },
+    {
+      "type": "select",
+      "id": "image_shape",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:sections.all.image_shape.options__1.label"
+        },
+        {
+          "value": "arch",
+          "label": "t:sections.all.image_shape.options__2.label"
+        },
+        {
+          "value": "blob",
+          "label": "t:sections.all.image_shape.options__3.label"
+        },
+        {
+          "value": "chevronleft",
+          "label": "t:sections.all.image_shape.options__4.label"
+        },
+        {
+          "value": "chevronright",
+          "label": "t:sections.all.image_shape.options__5.label"
+        },
+        {
+          "value": "diamond",
+          "label": "t:sections.all.image_shape.options__6.label"
+        },
+        {
+          "value": "parallelogram",
+          "label": "t:sections.all.image_shape.options__7.label"
+        },
+        {
+          "value": "round",
+          "label": "t:sections.all.image_shape.options__8.label"
+        }
+      ],
+      "default": "default",
+      "label": "t:sections.all.image_shape.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "default": false,
+      "label": "t:sections.featured-collection.settings.show_secondary_image.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "default": false,
+      "label": "t:sections.featured-collection.settings.show_vendor.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "default": false,
+      "label": "t:sections.featured-collection.settings.show_rating.label",
+      "info": "t:sections.featured-collection.settings.show_rating.info"
+    },
+    {
+      "type": "select",
+      "id": "quick_add",
+      "default": "none",
+      "label": "t:sections.main-collection-product-grid.settings.quick_add.label",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_1"
+        },
+        {
+          "value": "standard",
+          "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_2"
+        },
+        {
+          "value": "bulk",
+          "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_3"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:sections.featured-collection.settings.header_mobile.content"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "default": "2",
+      "label": "t:sections.featured-collection.settings.columns_mobile.label",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:sections.featured-collection.settings.columns_mobile.options__1.label"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.featured-collection.settings.columns_mobile.options__2.label"
+        }
+      ]
+    },    
+    {
+      "type": "checkbox",
+      "id": "swipe_on_mobile",
+      "default": false,
+      "label": "t:sections.featured-collection.settings.swipe_on_mobile.label"
+    },          
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
     }
-
-    // 3. Update preview container strictly using sidebar settings
-    function updateSectionSettings() {
-      // Title Elements
-      const titleInput = document.getElementById('setting-title').value;
-      const descInput = document.getElementById('setting-description').value;
-      document.getElementById('section-title-element').innerText = titleInput;
-      document.getElementById('section-desc-element').innerText = descInput;
-
-      // Columns Label
-      const colDesktop = document.getElementById('setting-columns-desktop').value;
-      document.getElementById('label-columns-desktop').innerText = colDesktop;
-
-      // Full Width adjustment
-      const isFullWidth = document.getElementById('setting-full-width').checked;
-      const widthContainer = document.getElementById('section-width-container');
-      if (isFullWidth) {
-        widthContainer.className = "w-full max-w-full px-4";
-      } else {
-        widthContainer.className = "max-w-7xl mx-auto";
-      }
-
-      // View All Button Style Adjustment
-      const viewAllStyle = document.getElementById('setting-view-all').value;
-      const viewAllBtn = document.getElementById('view-all-button');
-      
-      if (viewAllStyle === 'solid') {
-        viewAllBtn.className = "inline-block px-8 py-4 bg-brand-primary hover:bg-brand-accent text-white text-xs uppercase tracking-[0.2em] font-semibold transition rounded shadow-md";
-      } else if (viewAllStyle === 'outline') {
-        viewAllBtn.className = "inline-block px-8 py-4 border border-brand-primary hover:bg-brand-primary hover:text-white text-brand-primary text-xs uppercase tracking-[0.2em] font-semibold transition rounded";
-      } else {
-        viewAllBtn.className = "inline-block py-1 border-b border-brand-primary text-brand-primary hover:text-brand-accent hover:border-brand-accent text-xs uppercase tracking-[0.2em] font-semibold transition";
-      }
-
-      // Align header
-      setHeaderAlign(activeHeaderAlign);
-
-      // Re-trigger product grid update
-      renderProductGrid();
+  ],
+  "presets": [
+    {
+      "name": "t:sections.featured-collection.presets.name"
     }
-
-    // Set alignment controls active states
-    function setAlign(align) {
-      activeHeaderAlign = align;
-      const btns = document.querySelectorAll('.align-btn');
-      btns.forEach(btn => {
-        btn.classList.remove('border-brand-primary', 'bg-brand-primary', 'text-white');
-        btn.classList.add('border-brand-border', 'hover:bg-gray-50');
-      });
-
-      // Find selected button to activate
-      event.target.classList.remove('border-brand-border', 'hover:bg-gray-50');
-      event.target.classList.add('border-brand-primary', 'bg-brand-primary', 'text-white');
-
-      setHeaderAlign(align);
-    }
-
-    function setHeaderAlign(align) {
-      const headerBlock = document.getElementById('section-header');
-      if (align === 'center') {
-        headerBlock.className = "mb-10 text-center flex flex-col items-center";
-      } else if (align === 'right') {
-        headerBlock.className = "mb-10 text-right flex flex-col items-end";
-      } else {
-        headerBlock.className = "mb-10 text-left";
-      }
-    }
-
-    // 4. Quick View Modal Interaction Mechanics
-    function openQuickView(productId) {
-      // Find matches
-      const product = mockProducts.find(p => p.id === productId);
-      if (!product) return;
-
-      activeProduct = product;
-      selectedQty = 1;
-      document.getElementById('purchase-qty').value = selectedQty;
-
-      // Populate Elements
-      document.getElementById('modal-product-vendor').innerText = product.vendor;
-      document.getElementById('modal-product-title').innerText = product.title;
-      document.getElementById('modal-product-desc').innerText = product.desc;
-      document.getElementById('modal-product-img').src = product.images[0];
-      document.getElementById('modal-reviews-count').innerText = `(${product.reviewsCount} reviews)`;
-
-      // Price rendering
-      const salePrice = document.getElementById('modal-sale-price');
-      const comparePrice = document.getElementById('modal-compare-price');
-      const regPrice = document.getElementById('modal-regular-price');
-      const saleBadge = document.getElementById('modal-sale-badge');
-
-      if (product.onSale) {
-        salePrice.innerText = `$${product.salePrice.toFixed(2)}`;
-        salePrice.classList.remove('hidden');
-        comparePrice.innerText = `$${product.compareAtPrice.toFixed(2)}`;
-        comparePrice.classList.remove('hidden');
-        regPrice.classList.add('hidden');
-        saleBadge.classList.remove('hidden');
-      } else {
-        salePrice.classList.add('hidden');
-        comparePrice.classList.add('hidden');
-        regPrice.innerText = `$${product.regularPrice.toFixed(2)}`;
-        regPrice.classList.remove('hidden');
-        saleBadge.classList.add('hidden');
-      }
-
-      // Image Gallery Thumbnails
-      const thumbBox = document.getElementById('modal-thumbnails');
-      thumbBox.innerHTML = '';
-      product.images.forEach((img, i) => {
-        const thumbBtn = document.createElement('button');
-        thumbBtn.className = `border rounded overflow-hidden aspect-[3/4] focus:outline-none transition ${i === 0 ? 'border-brand-accent ring-1 ring-brand-accent' : 'border-brand-border'}`;
-        thumbBtn.onclick = function() {
-          document.getElementById('modal-product-img').src = img;
-          // Reset highlights
-          const buttons = thumbBox.querySelectorAll('button');
-          buttons.forEach(b => b.className = 'border border-brand-border rounded overflow-hidden aspect-[3/4] focus:outline-none');
-          thumbBtn.className = 'border border-brand-accent ring-1 ring-brand-accent rounded overflow-hidden aspect-[3/4] focus:outline-none';
-        };
-        thumbBtn.innerHTML = `<img src="${img}" class="w-full h-full object-cover object-top">`;
-        thumbBox.appendChild(thumbBtn);
-      });
-
-      // Populate Color Swatches
-      const colorBox = document.getElementById('color-swatches-container');
-      colorBox.innerHTML = '';
-      selectedColor = product.colors[0].name;
-      document.getElementById('selected-color-label').innerText = selectedColor;
-
-      product.colors.forEach((color, i) => {
-        const swatch = document.createElement('button');
-        swatch.className = `w-8 h-8 rounded-full border-2 focus:outline-none transition relative ${i === 0 ? 'border-brand-accent scale-110' : 'border-transparent'}`;
-        swatch.style.backgroundColor = color.value;
-        swatch.title = color.name;
-        swatch.onclick = function() {
-          selectedColor = color.name;
-          document.getElementById('selected-color-label').innerText = selectedColor;
-          
-          // Select color image swap if exists (in a real theme)
-          // Highlight active color
-          const swatches = colorBox.querySelectorAll('button');
-          swatches.forEach(s => s.classList.replace('border-brand-accent', 'border-transparent'));
-          swatches.forEach(s => s.classList.remove('scale-110'));
-          swatch.classList.replace('border-transparent', 'border-brand-accent');
-          swatch.classList.add('scale-110');
-        };
-        colorBox.appendChild(swatch);
-      });
-
-      // Populate Size Pills
-      const sizeBox = document.getElementById('size-pills-container');
-      sizeBox.innerHTML = '';
-      selectedSize = product.sizes[0];
-      document.getElementById('selected-size-label').innerText = selectedSize;
-
-      product.sizes.forEach((size, i) => {
-        const pill = document.createElement('button');
-        pill.className = `py-2 px-4 text-xs font-semibold border rounded transition focus:outline-none ${i === 0 ? 'border-brand-primary bg-brand-primary text-white' : 'border-brand-border text-brand-secondary hover:bg-gray-50'}`;
-        pill.innerText = size;
-        pill.onclick = function() {
-          selectedSize = size;
-          document.getElementById('selected-size-label').innerText = selectedSize;
-          
-          // Highlight active size
-          const pills = sizeBox.querySelectorAll('button');
-          pills.forEach(p => p.className = 'py-2 px-4 text-xs font-semibold border border-brand-border text-brand-secondary rounded hover:bg-gray-50 transition focus:outline-none');
-          pill.className = 'py-2 px-4 text-xs font-semibold border border-brand-primary bg-brand-primary text-white rounded transition focus:outline-none';
-        };
-        sizeBox.appendChild(pill);
-      });
-
-      // Render Modal visible
-      const modal = document.getElementById('quick-view-modal');
-      modal.classList.remove('hidden');
-      document.body.classList.add('overflow-hidden');
-    }
-
-    function closeQuickView() {
-      const modal = document.getElementById('quick-view-modal');
-      modal.classList.add('hidden');
-      document.body.classList.remove('overflow-hidden');
-    }
-
-    // Change Purchase Quantity Inside Modal
-    function changeQty(amt) {
-      selectedQty += amt;
-      if (selectedQty < 1) selectedQty = 1;
-      if (selectedQty > 10) selectedQty = 10; // Rule maximum constraint
-      document.getElementById('purchase-qty').value = selectedQty;
-    }
-
-    // Add item simulated trigger
-    function addToCartTrigger() {
-      if (!activeProduct) return;
-
-      const price = activeProduct.onSale ? activeProduct.salePrice : activeProduct.regularPrice;
-      const cartItem = {
-        id: activeProduct.id + "_" + selectedColor + "_" + selectedSize,
-        product_id: activeProduct.id,
-        title: activeProduct.title,
-        color: selectedColor,
-        size: selectedSize,
-        price: price,
-        qty: selectedQty,
-        image: activeProduct.images[0]
-      };
-
-      // Check if variant already exists in cart
-      const existing = cart.find(item => item.id === cartItem.id);
-      if (existing) {
-        existing.qty += selectedQty;
-      } else {
-        cart.push(cartItem);
-      }
-
-      closeQuickView();
-      renderCartDrawer();
-      toggleCartDrawer(true);
-      showToastNotification();
-    }
-
-    // Dynamic Cart Drawer Renderer
-    function renderCartDrawer() {
-      const cartContainer = document.getElementById('cart-items-container');
-      cartContainer.innerHTML = '';
-
-      if (cart.length === 0) {
-        cartContainer.innerHTML = `
-          <div class="flex flex-col items-center justify-center h-64 text-center">
-            <svg class="w-12 h-12 text-brand-secondary/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-            </svg>
-            <span class="text-sm font-semibold text-brand-primary">Your Shopping Bag is empty</span>
-            <p class="text-xs text-brand-secondary mt-1">Add items to preview simulated cart updates.</p>
-          </div>
-        `;
-        document.getElementById('cart-subtotal').innerText = "$0.00";
-        return;
-      }
-
-      let subtotal = 0;
-
-      cart.forEach(item => {
-        subtotal += item.price * item.qty;
-        const itemDiv = document.createElement('div');
-        itemDiv.className = "flex gap-4 pb-4 border-b border-brand-border/60 last:border-b-0";
-        itemDiv.innerHTML = `
-          <div class="w-20 h-24 bg-brand-bgLight rounded overflow-hidden border border-brand-border shrink-0 aspect-[3/4]">
-            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover object-top">
-          </div>
-          <div class="flex-1 flex flex-col justify-between">
-            <div>
-              <div class="flex justify-between items-baseline mb-0.5">
-                <h4 class="font-serif font-medium text-sm text-brand-primary">${item.title}</h4>
-                <span class="text-xs font-semibold text-brand-primary">$${(item.price * item.qty).toFixed(2)}</span>
-              </div>
-              <p class="text-[10px] text-brand-secondary">
-                Variant: <span class="font-medium text-brand-primary">${item.color} / ${item.size}</span>
-              </p>
-            </div>
-            
-            <div class="flex items-center justify-between mt-2">
-              <!-- Inline mini qty modifier -->
-              <div class="flex items-center border border-brand-border rounded bg-brand-bgLight text-xs scale-90 -translate-x-2">
-                <button onclick="changeCartQty('${item.id}', -1)" class="px-2 py-1 hover:bg-gray-100 font-bold">-</button>
-                <span class="px-3 font-semibold text-brand-primary">${item.qty}</span>
-                <button onclick="changeCartQty('${item.id}', 1)" class="px-2 py-1 hover:bg-gray-100 font-bold">+</button>
-              </div>
-              
-              <button onclick="removeFromCart('${item.id}')" class="text-[10px] text-red-500 hover:underline uppercase tracking-wider font-semibold">
-                Remove
-              </button>
-            </div>
-          </div>
-        `;
-        cartContainer.appendChild(itemDiv);
-      });
-
-      document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-    }
-
-    function changeCartQty(itemId, amt) {
-      const item = cart.find(item => item.id === itemId);
-      if (!item) return;
-
-      item.qty += amt;
-      if (item.qty <= 0) {
-        removeFromCart(itemId);
-      } else {
-        renderCartDrawer();
-      }
-    }
-
-    function removeFromCart(itemId) {
-      cart = cart.filter(item => item.id !== itemId);
-      renderCartDrawer();
-    }
-
-    // Toggle Cart Slide-In view
-    function toggleCartDrawer(open) {
-      const container = document.getElementById('cart-drawer-container');
-      const drawer = document.getElementById('cart-drawer');
-      const overlay = document.getElementById('cart-drawer-overlay');
-
-      if (open) {
-        container.classList.remove('hidden');
-        setTimeout(() => {
-          drawer.classList.remove('translate-x-full');
-          overlay.classList.replace('opacity-0', 'opacity-100');
-        }, 10);
-      } else {
-        drawer.classList.add('translate-x-full');
-        overlay.classList.replace('opacity-100', 'opacity-0');
-        setTimeout(() => {
-          container.classList.add('hidden');
-        }, 500);
-      }
-    }
-
-    // Show dynamic success Toast notification
-    function showToastNotification() {
-      const toast = document.getElementById('toast-notif');
-      toast.classList.replace('translate-y-12', 'translate-y-0');
-      toast.classList.replace('opacity-0', 'opacity-100');
-
-      setTimeout(() => {
-        toast.classList.replace('translate-y-0', 'translate-y-12');
-        toast.classList.replace('opacity-100', 'opacity-0');
-      }, 3000);
-    }
-  </script>
-</body>
-</html>
+  ]
+}
+{% endschema %}
