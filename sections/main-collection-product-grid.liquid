@@ -34,44 +34,6 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
-
-  /* High-end Fashion Layout Polish */
-  .facets-vertical {
-    display: flex;
-    gap: 40px;
-  }
-  
-  .facets-wrapper {
-    flex-shrink: 0;
-    width: 260px;
-  }
-
-  .product-grid-container {
-    flex-grow: 1;
-    position: relative;
-  }
-
-  /* Prevent layouts from shifting when ajax refresh occurs */
-  .product-grid-container.is-loading {
-    opacity: 0.6;
-    pointer-events: none;
-    transition: opacity 0.2s ease-in-out;
-  }
-
-  .grid__item {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-  }
-
-  /* Responsive Adjustments */
-  @media screen and (max-width: 989px) {
-    .facets-vertical {
-      flex-direction: column;
-      gap: 20px;
-    }
-    .facets-wrapper {
-      width: 100%;
-    }
-  }
 {%- endstyle -%}
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
@@ -177,7 +139,9 @@
             </div>
           </div>
         {%- else -%}
-          <div class="collection{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}">
+          <div
+            class="collection{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
+          >
             <div class="loading-overlay gradient"></div>
             <ul
               id="product-grid"
@@ -188,18 +152,12 @@
                 {% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %}
               "
             >
-              {%- liquid
-                assign skip_card_product_styles = false
-                assign columns_desktop = section.settings.columns_desktop | plus: 0
-              -%}
+              {% assign skip_card_product_styles = false %}
               {%- for product in collection.products -%}
-                {%- liquid
-                  # Performance Tuning: Eagerly load images above the fold
-                  assign lazy_load = true
-                  if forloop.index <= columns_desktop
-                    assign lazy_load = false
-                  endif
-                -%}
+                {% assign lazy_load = false %}
+                {%- if forloop.index > 2 -%}
+                  {%- assign lazy_load = true -%}
+                {%- endif -%}
                 <li
                   class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                   {% if settings.animations_reveal_on_scroll %}
@@ -404,7 +362,7 @@
     {
       "type": "checkbox",
       "id": "hide_hover_actions_mobile",
-      "default": true,
+      "default": false,
       "label": "Hide hover buttons on mobile"
     },
     {
