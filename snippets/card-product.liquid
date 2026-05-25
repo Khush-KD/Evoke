@@ -169,24 +169,37 @@
     }
     .card--enhanced .price--sale { color: #e63946; }
 
-    /* ── Color swatches ─────────────────────────────────────────── */
-    .card__color-swatches {
+    /* ── Color name chips (card) ────────────────────────────────── */
+    .card__color-chips {
       display: flex;
       gap: 5px;
       margin-top: 10px;
       flex-wrap: wrap;
       align-items: center;
     }
-    .color-swatch {
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      border: 2px solid transparent;
+    .color-chip {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #444;
+      background: #f3f3f3;
+      border: 1.5px solid transparent;
       cursor: pointer;
-      transition: transform .15s ease, border-color .15s ease;
-      box-shadow: 0 0 0 1px rgba(0,0,0,.12);
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+      white-space: nowrap;
+      line-height: 1.5;
     }
-    .color-swatch:hover,
-    .color-swatch.active { border-color: #111; transform: scale(1.2); }
+    .color-chip:hover {
+      background: #ebebeb;
+      border-color: #bbb;
+    }
+    .color-chip.active {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
 
     /* ── Rating ─────────────────────────────────────────────────── */
     .card__rating-row {
@@ -204,10 +217,6 @@
        The overlay is moved to <body> via JS so it is NEVER inside
        a CSS-transformed ancestor (which would break position:fixed).
     ══════════════════════════════════════════════════════════════ */
-
-    /* Default: hidden. Do NOT use the HTML `hidden` attribute — many
-       browsers apply [hidden]{display:none!important} which overrides
-       the .is-open rule below and permanently traps the modal. */
     .ql-overlay {
       display: none;
       position: fixed;
@@ -219,7 +228,6 @@
       justify-content: center;
       padding: 20px;
     }
-    /* Only the class toggle controls visibility */
     .ql-overlay.is-open { display: flex; }
 
     .ql-modal {
@@ -256,16 +264,20 @@
     }
     .ql-close:hover { background: rgba(0,0,0,.15); }
 
+    /* ── QL Image with fade-swap transition ─────────────────────── */
     .ql-image {
       background: #f6f6f6;
       overflow: hidden;
       min-height: 420px;
+      position: relative;
     }
     .ql-image img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
+      transition: opacity .25s ease;
     }
+    .ql-image img.fading { opacity: 0; }
 
     .ql-details {
       padding: 32px 28px;
@@ -314,17 +326,37 @@
       color: #666;
       margin-bottom: 8px;
     }
-    .ql-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
-    .ql-swatch {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid transparent;
-      box-shadow: 0 0 0 1px rgba(0,0,0,.14);
-      transition: transform .15s ease, border-color .15s ease;
+
+    /* ── Color name chips (Quick Look modal) ────────────────────── */
+    .ql-chips {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
     }
-    .ql-swatch:hover,
-    .ql-swatch.active { border-color: #111; transform: scale(1.18); }
+    .ql-chip {
+      display: inline-block;
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #444;
+      background: #f3f3f3;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+      white-space: nowrap;
+      line-height: 1.5;
+      font-family: inherit;
+    }
+    .ql-chip:hover {
+      background: #ebebeb;
+      border-color: #bbb;
+    }
+    .ql-chip.active {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
 
     .ql-atc-btn {
       display: flex;
@@ -347,16 +379,8 @@
     .ql-atc-btn:hover { background: #333; }
     .ql-atc-btn:active { transform: scale(.98); }
     .ql-atc-btn.disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
-    .ql-atc-btn.added {
-      background: #2d6a4f;
-      pointer-events: none;
-    }
-    .ql-atc-btn.go-to-cart {
-      background: #111;
-      pointer-events: auto;
-      text-decoration: none;
-      display: flex;
-    }
+    .ql-atc-btn.added { background: #2d6a4f; pointer-events: none; }
+    .ql-atc-btn.go-to-cart { background: #111; pointer-events: auto; }
     .ql-atc-btn.go-to-cart:hover { background: #333; }
 
     /* Card hover ATC — "Go to Cart" state */
@@ -461,7 +485,13 @@
         </div>
 
         {%- if card_product.featured_media -%}
-          <a href="{{ card_product.url }}" class="card__media" style="position:absolute;inset:0;" aria-label="{{ card_product.title | escape }}" tabindex="-1">
+          <a
+            href="{{ card_product.url }}"
+            class="card__media"
+            style="position:absolute;inset:0;display:block;"
+            aria-label="{{ card_product.title | escape }}"
+            tabindex="-1"
+          >
             <div class="media media--transparent media--hover-effect" style="height:100%;">
               {% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
               <img
@@ -517,6 +547,7 @@
             data-ql-trigger
             data-product-title="{{ card_product.title | escape }}"
             data-product-url="{{ card_product.url }}"
+            data-product-handle="{{ card_product.handle }}"
             data-product-vendor="{{ card_product.vendor | escape }}"
             data-product-description="{{ card_product.description | strip_html | truncatewords: 60 | escape }}"
             data-product-price="{{ card_product.price | money }}"
@@ -613,20 +644,19 @@
           {%- endif -%}
         </div>
 
-        <!-- Color swatches -->
+        <!-- Color name chips (card) -->
         {%- if color_option -%}
-          <div class="card__color-swatches">
-            {%- for color_val in color_option.values limit: 6 -%}
-              {%- assign color_handle = color_val | handle -%}
+          <div class="card__color-chips">
+            {%- for color_val in color_option.values limit: 5 -%}
               <span
-                class="color-swatch{% if forloop.first %} active{% endif %}"
-                style="background-color: {{ color_handle }};"
+                class="color-chip{% if forloop.first %} active{% endif %}"
+                data-color="{{ color_val | escape }}"
                 title="{{ color_val | escape }}"
                 aria-label="{{ color_val | escape }}"
-              ></span>
+              >{{ color_val | escape }}</span>
             {%- endfor -%}
-            {%- if color_option.values.size > 6 -%}
-              <span style="font-size:11px;color:#888;">+{{ color_option.values.size | minus: 6 }}</span>
+            {%- if color_option.values.size > 5 -%}
+              <span style="font-size:11px;color:#888;padding:3px 0;">+{{ color_option.values.size | minus: 5 }} more</span>
             {%- endif -%}
           </div>
         {%- endif -%}
@@ -667,17 +697,10 @@
 
 
 <!-- ════════════════════════════════════════════════════════════════
-     QUICK LOOK MODAL — rendered once (first card only, skip_styles=false)
-     IMPORTANT: The JS below immediately moves this node to <body> so it
-     is never a descendant of any CSS-transformed element. A transform on
-     an ancestor re-parents position:fixed, causing the modal to be sized
-     and positioned relative to the card instead of the viewport.
+     QUICK LOOK MODAL — rendered once per page (skip_styles=false only)
+     Immediately moved to <body> via JS to escape CSS transform stacking.
 ══════════════════════════════════════════════════════════════════ -->
 {%- unless skip_styles -%}
-<!-- NOTE: No `hidden` attribute here. The HTML hidden attribute is
-     implemented as [hidden]{display:none!important} in some browsers,
-     which permanently overrides .is-open{display:flex}. Visibility is
-     controlled exclusively via the .is-open CSS class. -->
 <div
   class="ql-overlay"
   id="quickLookOverlay"
@@ -710,7 +733,7 @@
 
       <div id="quickLookColorSection">
         <div class="ql-section-label">Color</div>
-        <div id="quickLookSwatches" class="ql-swatches"></div>
+        <div id="quickLookChips" class="ql-chips"></div>
       </div>
 
       <button id="quickLookAtcBtn" class="ql-atc-btn" type="button">
@@ -756,102 +779,198 @@
   if (window.__qlSetup) return;
   window.__qlSetup = true;
 
-  var overlay   = document.getElementById('quickLookOverlay');
-  var closeBtn  = document.getElementById('quickLookClose');
-  var elImage   = document.getElementById('quickLookImage');
-  var elVendor  = document.getElementById('quickLookVendor');
-  var elTitle   = document.getElementById('quickLookTitle');
-  var elPrice   = document.getElementById('quickLookPrice');
-  var elCompare = document.getElementById('quickLookCompare');
-  var elDesc    = document.getElementById('quickLookDesc');
-  var elColSec  = document.getElementById('quickLookColorSection');
-  var elSwatches= document.getElementById('quickLookSwatches');
-  var elAtcBtn  = document.getElementById('quickLookAtcBtn');
-  var elFullLink= document.getElementById('quickLookFullLink');
+  /* ── DOM refs ─────────────────────────────────────────────────── */
+  var overlay    = document.getElementById('quickLookOverlay');
+  var closeBtn   = document.getElementById('quickLookClose');
+  var elImage    = document.getElementById('quickLookImage');
+  var elVendor   = document.getElementById('quickLookVendor');
+  var elTitle    = document.getElementById('quickLookTitle');
+  var elPrice    = document.getElementById('quickLookPrice');
+  var elCompare  = document.getElementById('quickLookCompare');
+  var elDesc     = document.getElementById('quickLookDesc');
+  var elColSec   = document.getElementById('quickLookColorSection');
+  var elChips    = document.getElementById('quickLookChips');
+  var elAtcBtn   = document.getElementById('quickLookAtcBtn');
+  var elFullLink = document.getElementById('quickLookFullLink');
 
-  // ── FIX 1: Move overlay to <body> ───────────────────────────────
-  // CSS `transform` on any ancestor re-parents `position:fixed` elements,
-  // causing the overlay to be sized/clipped to the transformed element
-  // (in this case the hovered product card) instead of the viewport.
-  // Moving it to <body> guarantees it is never inside a transformed ancestor.
+  /* ── SVG icon constants ───────────────────────────────────────── */
+  var ICON_CART  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>';
+  var ICON_CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+  var ICON_ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+
+  /* ── Move overlay to <body> so CSS transform on card never clips it ── */
   if (overlay.parentNode !== document.body) {
     document.body.appendChild(overlay);
   }
 
-  // ── FIX 2: Class-only visibility ────────────────────────────────
-  // We deliberately do NOT use the `hidden` HTML attribute. Many browsers
-  // implement [hidden]{display:none!important} which overrides
-  // .is-open{display:flex}, permanently preventing the modal from showing.
-  // The .is-open class is the single source of truth for visibility.
+  /* ── Product JSON cache: { '/products/handle.js': data } ─────── */
+  var productCache = {};
 
+  /**
+   * Fetch Shopify product JSON (cached).
+   * @param {string} handle  Product handle (e.g. "my-cool-shirt")
+   * @param {function} cb    Callback receives parsed data or null on error
+   */
+  function fetchProduct(handle, cb) {
+    var url = '/products/' + handle + '.js';
+    if (productCache[url]) {
+      cb(productCache[url]);
+      return;
+    }
+    fetch(url)
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        productCache[url] = data;
+        cb(data);
+      })
+      .catch(function (err) {
+        console.warn('[QuickLook] Could not fetch product JSON:', err);
+        cb(null);
+      });
+  }
+
+  /**
+   * Smoothly swap the modal image src with a fade transition.
+   * @param {string} newSrc
+   */
+  function swapImage(newSrc) {
+    if (!newSrc || elImage.src === newSrc) return;
+    elImage.classList.add('fading');
+    setTimeout(function () {
+      elImage.src = newSrc;
+      elImage.onload = function () {
+        elImage.classList.remove('fading');
+        elImage.onload = null;
+      };
+      // Fallback: remove fade class even if onload doesn't fire (cached image)
+      setTimeout(function () { elImage.classList.remove('fading'); }, 400);
+    }, 200);
+  }
+
+  /**
+   * Given parsed product JSON and a color name, return the best matching
+   * image src (variant featured_image → product images fallback).
+   */
+  function imageForColor(productData, colorName) {
+    if (!productData) return null;
+    var lc = colorName.toLowerCase();
+
+    // 1. Look for a variant whose options include this color
+    var variant = null;
+    for (var i = 0; i < productData.variants.length; i++) {
+      var v = productData.variants[i];
+      for (var j = 0; j < v.options.length; j++) {
+        if (v.options[j].toLowerCase() === lc) {
+          variant = v;
+          break;
+        }
+      }
+      if (variant) break;
+    }
+
+    // 2. Use variant's featured_image if present
+    if (variant && variant.featured_image && variant.featured_image.src) {
+      return variant.featured_image.src;
+    }
+
+    // 3. Fallback: search product images whose alt text matches the color
+    if (productData.images) {
+      for (var k = 0; k < productData.images.length; k++) {
+        var img = productData.images[k];
+        if (img.alt && img.alt.toLowerCase().indexOf(lc) !== -1) {
+          return img.src;
+        }
+      }
+    }
+
+    return null; // No specific image found — keep current image
+  }
+
+  /* ── Open modal ───────────────────────────────────────────────── */
   function openModal(btn) {
     var d = btn.dataset;
 
-    elImage.src             = d.productImage || '';
-    elImage.alt             = d.productTitle || '';
-    elVendor.textContent    = d.productVendor || '';
-    elVendor.style.display  = d.productVendor ? '' : 'none';
-    elTitle.textContent     = d.productTitle  || '';
-    elDesc.textContent      = d.productDescription || '';
+    elImage.classList.remove('fading');
+    elImage.src = d.productImage || '';
+    elImage.alt = d.productTitle || '';
+
+    elVendor.textContent   = d.productVendor || '';
+    elVendor.style.display = d.productVendor ? '' : 'none';
+    elTitle.textContent    = d.productTitle  || '';
+    elDesc.textContent     = d.productDescription || '';
 
     elPrice.textContent = d.productPrice || '';
     var onSale = d.productOnSale === 'true';
     elPrice.classList.toggle('on-sale', onSale);
     if (onSale && d.productComparePrice) {
-      elCompare.textContent    = d.productComparePrice;
-      elCompare.style.display  = '';
+      elCompare.textContent   = d.productComparePrice;
+      elCompare.style.display = '';
     } else {
       elCompare.style.display = 'none';
     }
 
-    var colors = d.productColors ? d.productColors.split('|').filter(Boolean) : [];
+    /* Build color name chips */
+    var colors  = d.productColors ? d.productColors.split('|').filter(Boolean) : [];
+    var handle  = d.productHandle || '';
+
     if (colors.length) {
       elColSec.style.display = '';
-      elSwatches.innerHTML = colors.map(function(c, i) {
-        var bg = c.toLowerCase().replace(/ /g, '');
-        return '<span class="ql-swatch' + (i === 0 ? ' active' : '') + '" style="background-color:' + bg + '" title="' + c + '" aria-label="' + c + '"></span>';
+      elChips.innerHTML = colors.map(function (c, i) {
+        return '<button class="ql-chip' + (i === 0 ? ' active' : '') + '" type="button" data-color="' + escAttr(c) + '">' + escText(c) + '</button>';
       }).join('');
-      elSwatches.querySelectorAll('.ql-swatch').forEach(function(sw) {
-        sw.addEventListener('click', function() {
-          elSwatches.querySelectorAll('.ql-swatch').forEach(function(s){ s.classList.remove('active'); });
-          sw.classList.add('active');
+
+      /* Prefetch product JSON in the background so clicks feel instant */
+      if (handle) fetchProduct(handle, function () {});
+
+      elChips.querySelectorAll('.ql-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          /* Update active chip */
+          elChips.querySelectorAll('.ql-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+
+          /* Swap image */
+          if (!handle) return;
+          fetchProduct(handle, function (data) {
+            var src = imageForColor(data, chip.dataset.color);
+            if (src) swapImage(src);
+          });
         });
       });
     } else {
       elColSec.style.display = 'none';
     }
 
+    /* ATC button state */
     var available = d.productAvailable === 'true';
     elAtcBtn.dataset.variantId = d.productVariantId || '';
     elAtcBtn.disabled = !available;
-    elAtcBtn.classList.remove('go-to-cart', 'added');
+    elAtcBtn.classList.remove('go-to-cart', 'added', 'disabled');
     elAtcBtn.classList.toggle('disabled', !available);
     elAtcBtn.style.background = '';
     elAtcBtn.style.cursor = '';
-    if (!available) {
-      elAtcBtn.textContent = 'Sold Out';
-    } else {
-      elAtcBtn.innerHTML = ICON_CART + ' Add to Cart';
-    }
+    elAtcBtn.innerHTML = available ? (ICON_CART + ' Add to Cart') : 'Sold Out';
 
     elFullLink.href = d.productUrl || '#';
 
-    // Show via class only — no hidden attribute manipulation
     overlay.classList.add('is-open');
     document.body.classList.add('ql-no-scroll');
     closeBtn.focus();
   }
 
+  /* ── Close modal ──────────────────────────────────────────────── */
   function closeModal() {
     overlay.classList.remove('is-open');
     document.body.classList.remove('ql-no-scroll');
   }
 
-  document.addEventListener('click', function(e) {
+  /* ── Global click delegation ──────────────────────────────────── */
+  document.addEventListener('click', function (e) {
     var qlBtn = e.target.closest('[data-ql-trigger]');
     if (qlBtn) { e.preventDefault(); openModal(qlBtn); return; }
 
-    // Close when clicking the backdrop (the overlay itself, not the modal)
     if (e.target === overlay) { closeModal(); return; }
 
     var atcBtn = e.target.closest('.js-quick-atc');
@@ -860,43 +979,36 @@
 
   closeBtn.addEventListener('click', closeModal);
 
-  document.addEventListener('keydown', function(e) {
+  document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
   });
 
-  elAtcBtn.addEventListener('click', function() {
+  elAtcBtn.addEventListener('click', function () {
     if (!elAtcBtn.disabled && elAtcBtn.dataset.variantId) {
       quickATC(elAtcBtn.dataset.variantId, elAtcBtn, true);
     }
   });
 
-  // SVG icons reused across states
-  var ICON_CART = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>';
-  var ICON_CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
-  var ICON_ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-
+  /* ── Cart badge refresh ───────────────────────────────────────── */
   function updateCartBadges() {
     fetch('/cart.js')
-      .then(function(r){ return r.json(); })
-      .then(function(cart) {
-        document.querySelectorAll('[data-cart-count], .cart-count-bubble').forEach(function(node) {
+      .then(function (r) { return r.json(); })
+      .then(function (cart) {
+        document.querySelectorAll('[data-cart-count], .cart-count-bubble').forEach(function (node) {
           node.textContent = cart.item_count;
         });
         document.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
       });
   }
 
+  /* ── Quick Add to Cart ────────────────────────────────────────── */
   function quickATC(variantId, el, isModal) {
     if (!variantId || el.disabled) return;
 
     var origHTML = el.innerHTML;
     el.disabled  = true;
     el.style.background = '';
-
-    // Step 1: "Adding…"
-    el.innerHTML = isModal
-      ? (ICON_CART + ' Adding&hellip;')
-      : '&hellip;';
+    el.innerHTML = isModal ? (ICON_CART + ' Adding&hellip;') : '&hellip;';
 
     fetch('/cart/add.js', {
       method: 'POST',
@@ -906,28 +1018,25 @@
       },
       body: JSON.stringify({ id: variantId, quantity: 1 })
     })
-    .then(function(r) {
+    .then(function (r) {
       if (!r.ok) throw new Error('Cart add failed: ' + r.status);
       return r.json();
     })
-    .then(function() {
+    .then(function () {
       updateCartBadges();
 
       if (isModal) {
-        // ── Modal button: Added → Go to Cart ────────────────────
-        // Phase A: green "✓ Added" flash (700ms)
+        /* Phase A: green "✓ Added" (700 ms) */
         el.innerHTML = ICON_CHECK + ' Added!';
         el.style.background = '#2d6a4f';
         el.disabled = true;
 
-        setTimeout(function() {
-          // Phase B: swap to "Go to Cart →" — still a button but navigates
+        setTimeout(function () {
+          /* Phase B: "Go to Cart →" */
           el.innerHTML = ICON_ARROW + ' Go to Cart';
           el.style.background = '#111';
           el.style.cursor = 'pointer';
           el.disabled = false;
-
-          // One-time click: navigate to cart
           el.addEventListener('click', function goToCart() {
             el.removeEventListener('click', goToCart);
             window.location.href = '/cart';
@@ -935,11 +1044,10 @@
         }, 700);
 
       } else {
-        // ── Card hover button: brief "✓" then "Go to Cart →" ────
         el.innerHTML = ICON_CHECK + ' Added';
         el.classList.add('added-state');
 
-        setTimeout(function() {
+        setTimeout(function () {
           el.innerHTML = ICON_ARROW + ' Go to Cart';
           el.classList.remove('added-state');
           el.classList.add('go-to-cart-state');
@@ -951,8 +1059,8 @@
             window.location.href = '/cart';
           }, { once: true });
 
-          // Auto-reset after 4s so card returns to normal if user doesn't navigate
-          setTimeout(function() {
+          /* Auto-reset after 4 s */
+          setTimeout(function () {
             el.classList.remove('go-to-cart-state');
             el.innerHTML = origHTML;
             el.style.background = '';
@@ -960,12 +1068,25 @@
         }, 700);
       }
     })
-    .catch(function(err) {
+    .catch(function (err) {
       console.error('[QuickATC]', err);
-      el.disabled      = false;
-      el.innerHTML     = origHTML;
+      el.disabled = false;
+      el.innerHTML = origHTML;
       el.style.background = '';
     });
+  }
+
+  /* ── Safe string helpers ──────────────────────────────────────── */
+  function escText(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+  function escAttr(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;');
   }
 })();
 </script>
