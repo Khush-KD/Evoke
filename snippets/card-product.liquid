@@ -854,7 +854,17 @@
     if (e.target === overlay) { closeModal(); return; }
 
     var atcBtn = e.target.closest('.js-quick-atc');
-    if (atcBtn) { e.preventDefault(); quickATC(atcBtn.dataset.variantId, atcBtn, false); }
+    if (atcBtn) { e.preventDefault(); quickATC(atcBtn.dataset.variantId, atcBtn, false); return; }
+
+    // ── NEW: clicking anywhere on the image area opens Quick Look ──
+    var mediaWrapper = e.target.closest('.card__media-wrapper');
+    if (mediaWrapper) {
+      // Don't re-fire if the click was on a hover-action button
+      if (e.target.closest('.card__hover-actions')) return;
+      // Find the Quick Look trigger inside the same card
+      var trigger = mediaWrapper.querySelector('[data-ql-trigger]');
+      if (trigger) { e.preventDefault(); openModal(trigger); }
+    }
   });
 
   closeBtn.addEventListener('click', closeModal);
