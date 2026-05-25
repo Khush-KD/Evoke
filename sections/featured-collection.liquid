@@ -129,7 +129,7 @@
                   show_hover_actions: section.settings.show_hover_actions,
                   show_quick_actions: section.settings.show_quick_actions,
                   show_otherhover_actions: section.settings.show_otherhover_actions,
-                  hide_hover_on_mobile: section.settings.hide_hover_on_mobile,
+                  hide_hover_mobile: section.settings.hide_hover_actions_mobile,
                   section_id: section.id,
                   quick_add: section.settings.quick_add
                 %}
@@ -485,14 +485,14 @@
       "label": "Show Add to Cart on hover"
     },
     {
-      "type": "checkbox",
-      "id": "hide_hover_on_mobile",
-      "default": false,
-      "label": "Hide Quick Look & Add to Cart buttons on mobile"
-    },
-    {
       "type": "header",
       "content": "t:sections.featured-collection.settings.header_mobile.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_hover_actions_mobile",
+      "default": false,
+      "label": "Hide hover buttons on mobile"
     },
     {
       "type": "select",
