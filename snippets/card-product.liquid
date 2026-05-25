@@ -425,11 +425,24 @@
 
     /* ── Mobile ─────────────────────────────────────────────────── */
     @media (max-width: 749px) {
+      /* ── Quick Look modal ── */
       .ql-modal { grid-template-columns: 1fr; max-height: 92vh; }
       .ql-image { min-height: 220px; max-height: 260px; }
       .ql-details { padding: 20px 18px; gap: 12px; }
-      .card__hover-actions { padding: 8px; }
-      .card__hover-btn { padding: 9px 10px; font-size: 12px; }
+
+      /* ── Card hover action bar: stack vertically so nothing gets clipped ── */
+      .card__hover-actions {
+        flex-direction: column;
+        gap: 5px;
+        padding: 8px;
+      }
+      .card__hover-btn {
+        padding: 7px 10px;
+        font-size: 12px;
+        /* Allow text to wrap inside the button if needed on very narrow screens */
+        white-space: normal;
+        text-align: center;
+      }
     }
 
     body.ql-no-scroll { overflow: hidden; }
