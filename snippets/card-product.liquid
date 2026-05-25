@@ -856,15 +856,18 @@
     var atcBtn = e.target.closest('.js-quick-atc');
     if (atcBtn) { e.preventDefault(); quickATC(atcBtn.dataset.variantId, atcBtn, false); return; }
 
-    // ── NEW: clicking anywhere on the image area opens Quick Look ──
+    // ── Clicking the image area navigates to the full product page ──
     var mediaWrapper = e.target.closest('.card__media-wrapper');
     if (mediaWrapper) {
-      // Don't re-fire if the click was on a hover-action button
+      // Don't interfere with hover-action buttons
       if (e.target.closest('.card__hover-actions')) return;
-      // Find the Quick Look trigger inside the same card
+      // Read the URL from the Quick Look trigger's data attribute
       var trigger = mediaWrapper.querySelector('[data-ql-trigger]');
-      if (trigger) { e.preventDefault(); openModal(trigger); }
+      if (trigger && trigger.dataset.productUrl) {
+        window.location.href = trigger.dataset.productUrl;
+      }
     }
+    
   });
 
   closeBtn.addEventListener('click', closeModal);
