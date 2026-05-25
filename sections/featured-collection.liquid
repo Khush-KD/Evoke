@@ -36,6 +36,26 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  /* View-all button positioning helpers */
+  .collection__title--has-view-all-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .collection__title--has-view-all-top .collection__title-text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .collection__view-all--top-right {
+    flex-shrink: 0;
+  }
+  .collection__view-all--bottom-right {
+    display: flex;
+    justify-content: flex-end;
+  }
 {%- endstyle -%}
 
 {%- liquid
@@ -62,6 +82,8 @@
   if section.settings.enable_desktop_slider and products_to_display > section.settings.columns_desktop
     assign show_desktop_slider = true
   endif
+
+  assign view_all_position = section.settings.view_all_position | default: 'bottom_center'
 -%}
 
 <div
@@ -72,24 +94,43 @@
     id="collection-{{ section.id }}"
     data-id="{{ section.id }}"
   >
-    <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width{% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}">
-      {%- if section.settings.title != blank -%}
-        <h2 class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-          {{ section.settings.title }}
-        </h2>
-      {%- endif -%}
-      {%- if section.settings.description != blank
-        or section.settings.show_description
-        and section.settings.collection.description != empty
-      -%}
-        <div class="collection__description {{ section.settings.description_style }} rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-          {%- if section.settings.show_description -%}
-            {{ section.settings.collection.description }}
-          {%- else -%}
-            {{ section.settings.description -}}
-          {%- endif %}
+
+    {%- comment -%} ── Title row (optionally contains View All at top-right) ── {%- endcomment -%}
+    <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width{% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}{% if section.settings.show_view_all and more_in_collection and view_all_position == 'top_right' %} collection__title--has-view-all-top{% endif %}">
+
+      {%- comment -%} Wrap title + description so they flex-grow together {%- endcomment -%}
+      <div class="collection__title-text">
+        {%- if section.settings.title != blank -%}
+          <h2 class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+            {{ section.settings.title }}
+          </h2>
+        {%- endif -%}
+        {%- if section.settings.description != blank
+          or section.settings.show_description
+          and section.settings.collection.description != empty
+        -%}
+          <div class="collection__description {{ section.settings.description_style }} rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+            {%- if section.settings.show_description -%}
+              {{ section.settings.collection.description }}
+            {%- else -%}
+              {{ section.settings.description -}}
+            {%- endif %}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.show_view_all and more_in_collection and view_all_position == 'top_right' -%}
+        <div class="collection__view-all--top-right{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          <a
+            href="{{ section.settings.collection.url }}"
+            class="{% if section.settings.view_all_style == 'link' %}link underlined-link{% elsif section.settings.view_all_style == 'solid' %}button{% else %}button button--secondary{% endif %}"
+            aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: section.settings.collection.title | escape }}"
+          >
+            {{ 'sections.featured_collection.view_all' | t }}
+          </a>
         </div>
       {%- endif -%}
+
     </div>
 
     <slider-component class="slider-mobile-gutter{% if section.settings.full_width %} slider-component-full-width{% endif %}{% if show_mobile_slider == false %} page-width{% endif %}{% if show_desktop_slider == false and section.settings.full_width == false %} page-width-desktop{% endif %}{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
@@ -201,16 +242,30 @@
     </slider-component>
 
     {%- if section.settings.show_view_all and more_in_collection -%}
-      <div class="center collection__view-all{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-        <a
-          href="{{ section.settings.collection.url }}"
-          class="{% if section.settings.view_all_style == 'link' %}link underlined-link{% elsif section.settings.view_all_style == 'solid' %}button{% else %}button button--secondary{% endif %}"
-          aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: section.settings.collection.title | escape }}"
-        >
-          {{ 'sections.featured_collection.view_all' | t }}
-        </a>
-      </div>
+      {%- if view_all_position == 'bottom_center' -%}
+        <div class="center collection__view-all{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          <a
+            href="{{ section.settings.collection.url }}"
+            class="{% if section.settings.view_all_style == 'link' %}link underlined-link{% elsif section.settings.view_all_style == 'solid' %}button{% else %}button button--secondary{% endif %}"
+            aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: section.settings.collection.title | escape }}"
+          >
+            {{ 'sections.featured_collection.view_all' | t }}
+          </a>
+        </div>
+      {%- elsif view_all_position == 'bottom_right' -%}
+        <div class="collection__view-all--bottom-right page-width{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          <a
+            href="{{ section.settings.collection.url }}"
+            class="{% if section.settings.view_all_style == 'link' %}link underlined-link{% elsif section.settings.view_all_style == 'solid' %}button{% else %}button button--secondary{% endif %}"
+            aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: section.settings.collection.title | escape }}"
+          >
+            {{ 'sections.featured_collection.view_all' | t }}
+          </a>
+        </div>
+      {%- endif -%}
+      {%- comment -%} top_right is rendered inside the title row above {%- endcomment -%}
     {%- endif -%}
+
     {% if section.settings.image_shape == 'arch' %}
       {{ 'mask-arch.svg' | inline_asset_content }}
     {%- endif -%}
@@ -239,11 +294,11 @@
       "step": 1,
       "default": 4,
       "label": "t:sections.featured-collection.settings.products_to_show.label"
-    },     
+    },
     {
       "type": "header",
       "content": "t:sections.featured-collection.settings.header_text.content"
-    },   
+    },
     {
       "type": "inline_richtext",
       "id": "title",
@@ -287,7 +342,7 @@
       "type": "checkbox",
       "id": "show_description",
       "label": "t:sections.featured-collection.settings.show_description.label",
-      "default": false   
+      "default": false
     },
     {
       "type": "select",
@@ -312,7 +367,7 @@
     {
       "type": "header",
       "content": "t:sections.featured-collection.settings.header_collection.content"
-    },    
+    },
     {
       "type": "range",
       "id": "columns_desktop",
@@ -322,7 +377,7 @@
       "default": 4,
       "label": "t:sections.featured-collection.settings.columns_desktop.label"
     },
-        {
+    {
       "type": "checkbox",
       "id": "enable_desktop_slider",
       "label": "t:sections.featured-collection.settings.enable_desktop_slider.label",
@@ -343,6 +398,26 @@
     },
     {
       "type": "select",
+      "id": "view_all_position",
+      "label": "View All button position",
+      "options": [
+        {
+          "value": "top_right",
+          "label": "Top right (beside heading)"
+        },
+        {
+          "value": "bottom_center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom_right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "bottom_center"
+    },
+    {
+      "type": "select",
       "id": "view_all_style",
       "label": "t:sections.featured-collection.settings.view_all_style.label",
       "options": [
@@ -360,7 +435,7 @@
         }
       ],
       "default": "solid"
-    }, 
+    },
     {
       "type": "color_scheme",
       "id": "color_scheme",
@@ -508,13 +583,13 @@
       "id": "hide_hover_actions_mobile",
       "default": false,
       "label": "Hide hover buttons on mobile"
-    },    
+    },
     {
       "type": "checkbox",
       "id": "swipe_on_mobile",
       "default": false,
       "label": "t:sections.featured-collection.settings.swipe_on_mobile.label"
-    },          
+    },
     {
       "type": "header",
       "content": "t:sections.all.padding.section_padding_heading"
