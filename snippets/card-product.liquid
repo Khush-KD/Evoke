@@ -346,6 +346,27 @@
     .ql-atc-btn:hover { background: #333; }
     .ql-atc-btn:active { transform: scale(.98); }
     .ql-atc-btn.disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+    .ql-atc-btn.added {
+      background: #2d6a4f;
+      pointer-events: none;
+    }
+    .ql-atc-btn.go-to-cart {
+      background: #111;
+      pointer-events: auto;
+      text-decoration: none;
+      display: flex;
+    }
+    .ql-atc-btn.go-to-cart:hover { background: #333; }
+
+    /* Card hover ATC — "Go to Cart" state */
+    .card__hover-btn--atc.added-state {
+      background: #2d6a4f;
+      pointer-events: none;
+    }
+    .card__hover-btn--atc.go-to-cart-state {
+      background: #111;
+      pointer-events: auto;
+    }
 
     .ql-full-link {
       display: block;
@@ -802,12 +823,14 @@
     var available = d.productAvailable === 'true';
     elAtcBtn.dataset.variantId = d.productVariantId || '';
     elAtcBtn.disabled = !available;
+    elAtcBtn.classList.remove('go-to-cart', 'added');
     elAtcBtn.classList.toggle('disabled', !available);
     elAtcBtn.style.background = '';
+    elAtcBtn.style.cursor = '';
     if (!available) {
       elAtcBtn.textContent = 'Sold Out';
     } else {
-      elAtcBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> Add to Cart';
+      elAtcBtn.innerHTML = ICON_CART + ' Add to Cart';
     }
 
     elFullLink.href = d.productUrl || '#';
@@ -846,13 +869,33 @@
     }
   });
 
+  // SVG icons reused across states
+  var ICON_CART = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>';
+  var ICON_CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+  var ICON_ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+
+  function updateCartBadges() {
+    fetch('/cart.js')
+      .then(function(r){ return r.json(); })
+      .then(function(cart) {
+        document.querySelectorAll('[data-cart-count], .cart-count-bubble').forEach(function(node) {
+          node.textContent = cart.item_count;
+        });
+        document.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
+      });
+  }
+
   function quickATC(variantId, el, isModal) {
     if (!variantId || el.disabled) return;
 
     var origHTML = el.innerHTML;
-    var origBg   = el.style.background;
     el.disabled  = true;
-    el.innerHTML = isModal ? 'Adding&hellip;' : '&hellip;';
+    el.style.background = '';
+
+    // Step 1: "Adding…"
+    el.innerHTML = isModal
+      ? (ICON_CART + ' Adding&hellip;')
+      : '&hellip;';
 
     fetch('/cart/add.js', {
       method: 'POST',
@@ -867,31 +910,60 @@
       return r.json();
     })
     .then(function() {
-      el.innerHTML = isModal ? '&#10003; Added!' : '&#10003;';
-      el.style.background = '#2d6a4f';
+      updateCartBadges();
 
-      // Update cart count badges
-      fetch('/cart.js')
-        .then(function(r){ return r.json(); })
-        .then(function(cart) {
-          document.querySelectorAll('[data-cart-count], .cart-count-bubble').forEach(function(node) {
-            node.textContent = cart.item_count;
-          });
-          document.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
-        });
+      if (isModal) {
+        // ── Modal button: Added → Go to Cart ────────────────────
+        // Phase A: green "✓ Added" flash (700ms)
+        el.innerHTML = ICON_CHECK + ' Added!';
+        el.style.background = '#2d6a4f';
+        el.disabled = true;
 
-      setTimeout(function() {
-        el.disabled      = false;
-        el.innerHTML     = origHTML;
-        el.style.background = origBg;
-        if (isModal) closeModal();
-      }, 1600);
+        setTimeout(function() {
+          // Phase B: swap to "Go to Cart →" — still a button but navigates
+          el.innerHTML = ICON_ARROW + ' Go to Cart';
+          el.style.background = '#111';
+          el.style.cursor = 'pointer';
+          el.disabled = false;
+
+          // One-time click: navigate to cart
+          el.addEventListener('click', function goToCart() {
+            el.removeEventListener('click', goToCart);
+            window.location.href = '/cart';
+          }, { once: true });
+        }, 700);
+
+      } else {
+        // ── Card hover button: brief "✓" then "Go to Cart →" ────
+        el.innerHTML = ICON_CHECK + ' Added';
+        el.classList.add('added-state');
+
+        setTimeout(function() {
+          el.innerHTML = ICON_ARROW + ' Go to Cart';
+          el.classList.remove('added-state');
+          el.classList.add('go-to-cart-state');
+          el.disabled = false;
+
+          el.addEventListener('click', function goToCart(ev) {
+            ev.preventDefault();
+            el.removeEventListener('click', goToCart);
+            window.location.href = '/cart';
+          }, { once: true });
+
+          // Auto-reset after 4s so card returns to normal if user doesn't navigate
+          setTimeout(function() {
+            el.classList.remove('go-to-cart-state');
+            el.innerHTML = origHTML;
+            el.style.background = '';
+          }, 4000);
+        }, 700);
+      }
     })
     .catch(function(err) {
       console.error('[QuickATC]', err);
       el.disabled      = false;
       el.innerHTML     = origHTML;
-      el.style.background = origBg;
+      el.style.background = '';
     });
   }
 })();
