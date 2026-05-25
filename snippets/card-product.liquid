@@ -26,10 +26,8 @@
   {{ 'quantity-popover.css' | asset_url | stylesheet_tag }}
 
   <style>
-    /* ── Card Base ─────────────────────────────────────────────────── */
-    .product-card-wrapper {
-      position: relative;
-    }
+    /* ── Card Base ──────────────────────────────────────────────── */
+    .product-card-wrapper { position: relative; }
 
     .card--enhanced {
       border-radius: 12px;
@@ -39,33 +37,28 @@
       transition: box-shadow .28s ease, transform .28s ease;
       will-change: transform;
     }
-
     .card--enhanced:hover {
       box-shadow: 0 8px 28px rgba(0,0,0,.13);
       transform: translateY(-3px);
     }
 
-    /* ── Image area ─────────────────────────────────────────────────── */
+    /* ── Image area ─────────────────────────────────────────────── */
     .card--enhanced .card__media-wrapper {
       position: relative;
       overflow: hidden;
       border-radius: 12px 12px 0 0;
     }
-
     .card--enhanced .card__media img {
       transition: transform .5s cubic-bezier(.25,.46,.45,.94);
     }
-
     .card--enhanced:hover .card__media img {
       transform: scale(1.06);
     }
 
-    /* ── Hover action bar ───────────────────────────────────────────── */
+    /* ── Hover action bar ───────────────────────────────────────── */
     .card__hover-actions {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       display: flex;
       gap: 8px;
       padding: 12px;
@@ -74,10 +67,7 @@
       transition: transform .3s cubic-bezier(.34,1.2,.64,1);
       z-index: 3;
     }
-
-    .card--enhanced:hover .card__hover-actions {
-      transform: translateY(0);
-    }
+    .card--enhanced:hover .card__hover-actions { transform: translateY(0); }
 
     .card__hover-btn {
       flex: 1;
@@ -92,10 +82,10 @@
       font-weight: 600;
       letter-spacing: .4px;
       cursor: pointer;
+      text-decoration: none;
       transition: background .18s ease, transform .15s ease;
       white-space: nowrap;
     }
-
     .card__hover-btn:active { transform: scale(.97); }
 
     .card__hover-btn--quicklook {
@@ -103,37 +93,26 @@
       color: #111;
       backdrop-filter: blur(6px);
     }
-
     .card__hover-btn--quicklook:hover { background: #fff; }
 
-    .card__hover-btn--atc {
-      background: #111;
-      color: #fff;
-    }
-
+    .card__hover-btn--atc { background: #111; color: #fff; }
     .card__hover-btn--atc:hover { background: #333; }
-
     .card__hover-btn--atc.sold-out {
       background: rgba(255,255,255,.5);
       color: rgba(255,255,255,.7);
       cursor: not-allowed;
     }
+    .card__hover-btn svg { flex-shrink: 0; }
 
-    .card__hover-btn svg {
-      flex-shrink: 0;
-    }
-
-    /* ── Badges ─────────────────────────────────────────────────────── */
+    /* ── Badges ─────────────────────────────────────────────────── */
     .card__badge-stack {
       position: absolute;
-      top: 12px;
-      left: 12px;
+      top: 12px; left: 12px;
       display: flex;
       flex-direction: column;
       gap: 5px;
       z-index: 2;
     }
-
     .badge--pill {
       display: inline-block;
       padding: 3px 10px;
@@ -143,15 +122,11 @@
       letter-spacing: .5px;
       text-transform: uppercase;
     }
+    .badge--sale    { background: #e63946; color: #fff; }
+    .badge--soldout { background: #555;    color: #fff; }
 
-    .badge--sale { background: #e63946; color: #fff; }
-    .badge--soldout { background: #555; color: #fff; }
-    .badge--new { background: #2d6a4f; color: #fff; }
-
-    /* ── Card info below image ──────────────────────────────────────── */
-    .card--enhanced .card__info {
-      padding: 14px 16px 16px;
-    }
+    /* ── Card info ──────────────────────────────────────────────── */
+    .card--enhanced .card__info { padding: 14px 16px 16px; }
 
     .card--enhanced .card__vendor {
       font-size: 11px;
@@ -161,7 +136,6 @@
       color: #888;
       margin-bottom: 4px;
     }
-
     .card--enhanced .card__title a {
       font-size: 15px;
       font-weight: 600;
@@ -173,7 +147,6 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-
     .card--enhanced .card__title a:hover { color: #333; }
 
     .card--enhanced .card__pricing {
@@ -182,65 +155,51 @@
       gap: 8px;
       margin-top: 8px;
     }
-
     .card--enhanced .price--current {
       font-size: 16px;
       font-weight: 700;
       color: #111;
     }
-
     .card--enhanced .price--compare {
       font-size: 13px;
       color: #aaa;
       text-decoration: line-through;
     }
-
     .card--enhanced .price--sale { color: #e63946; }
 
-    /* ── Color swatches on card ─────────────────────────────────────── */
+    /* ── Color swatches ─────────────────────────────────────────── */
     .card__color-swatches {
       display: flex;
       gap: 5px;
       margin-top: 10px;
       flex-wrap: wrap;
+      align-items: center;
     }
-
     .color-swatch {
-      width: 18px;
-      height: 18px;
+      width: 18px; height: 18px;
       border-radius: 50%;
       border: 2px solid transparent;
       cursor: pointer;
       transition: transform .15s ease, border-color .15s ease;
       box-shadow: 0 0 0 1px rgba(0,0,0,.12);
     }
-
     .color-swatch:hover,
     .color-swatch.active { border-color: #111; transform: scale(1.2); }
 
-    /* ── Rating ─────────────────────────────────────────────────────── */
+    /* ── Rating ─────────────────────────────────────────────────── */
     .card__rating-row {
       display: flex;
       align-items: center;
       gap: 5px;
       margin-top: 6px;
     }
-
-    .card__stars {
-      display: flex;
-      gap: 1px;
-    }
-
+    .card__stars { display: flex; gap: 1px; }
     .card__stars svg { color: #f4a261; }
+    .card__rating-count { font-size: 12px; color: #888; }
 
-    .card__rating-count {
-      font-size: 12px;
-      color: #888;
-    }
-
-    /* ════════════════════════════════════════════════════════════════
+    /* ════════════════════════════════════════════════════════════
        QUICK LOOK MODAL
-    ═══════════════════════════════════════════════════════════════ */
+    ══════════════════════════════════════════════════════════════ */
     .ql-overlay {
       display: none;
       position: fixed;
@@ -251,15 +210,8 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      animation: ql-fade-in .2s ease;
     }
-
     .ql-overlay.is-open { display: flex; }
-
-    @keyframes ql-fade-in {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
 
     .ql-modal {
       background: #fff;
@@ -271,21 +223,18 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       box-shadow: 0 24px 64px rgba(0,0,0,.22);
-      animation: ql-slide-up .28s cubic-bezier(.34,1.2,.64,1);
       position: relative;
+      animation: ql-up .28s cubic-bezier(.34,1.2,.64,1);
     }
-
-    @keyframes ql-slide-up {
-      from { opacity: 0; transform: translateY(24px) scale(.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+    @keyframes ql-up {
+      from { opacity:0; transform: translateY(20px) scale(.97); }
+      to   { opacity:1; transform: translateY(0)    scale(1);   }
     }
 
     .ql-close {
       position: absolute;
-      top: 14px;
-      right: 14px;
-      width: 32px;
-      height: 32px;
+      top: 14px; right: 14px;
+      width: 32px; height: 32px;
       background: rgba(0,0,0,.07);
       border: none;
       border-radius: 50%;
@@ -296,24 +245,19 @@
       z-index: 10;
       transition: background .15s ease;
     }
-
     .ql-close:hover { background: rgba(0,0,0,.15); }
 
-    /* Modal — left image panel */
     .ql-image {
       background: #f6f6f6;
-      position: relative;
       overflow: hidden;
       min-height: 420px;
     }
-
     .ql-image img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: cover;
+      display: block;
     }
 
-    /* Modal — right details panel */
     .ql-details {
       padding: 32px 28px;
       overflow-y: auto;
@@ -329,7 +273,6 @@
       text-transform: uppercase;
       color: #999;
     }
-
     .ql-title {
       font-size: 20px;
       font-weight: 700;
@@ -337,26 +280,10 @@
       line-height: 1.3;
       margin: 0;
     }
-
-    .ql-price-row {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-    }
-
-    .ql-price-current {
-      font-size: 22px;
-      font-weight: 800;
-      color: #111;
-    }
-
+    .ql-price-row { display: flex; align-items: baseline; gap: 10px; }
+    .ql-price-current { font-size: 22px; font-weight: 800; color: #111; }
     .ql-price-current.on-sale { color: #e63946; }
-
-    .ql-price-compare {
-      font-size: 16px;
-      color: #bbb;
-      text-decoration: line-through;
-    }
+    .ql-price-compare { font-size: 16px; color: #bbb; text-decoration: line-through; }
 
     .ql-description {
       font-size: 14px;
@@ -370,7 +297,6 @@
       overflow: hidden;
     }
 
-    /* Color section */
     .ql-section-label {
       font-size: 12px;
       font-weight: 700;
@@ -379,30 +305,18 @@
       color: #666;
       margin-bottom: 8px;
     }
-
-    .ql-swatches {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
+    .ql-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
     .ql-swatch {
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid transparent;
       box-shadow: 0 0 0 1px rgba(0,0,0,.14);
       transition: transform .15s ease, border-color .15s ease;
     }
-
     .ql-swatch:hover,
-    .ql-swatch.active {
-      border-color: #111;
-      transform: scale(1.18);
-    }
+    .ql-swatch.active { border-color: #111; transform: scale(1.18); }
 
-    /* ATC button */
     .ql-atc-btn {
       display: flex;
       align-items: center;
@@ -421,17 +335,10 @@
       width: 100%;
       margin-top: 4px;
     }
-
     .ql-atc-btn:hover { background: #333; }
     .ql-atc-btn:active { transform: scale(.98); }
+    .ql-atc-btn.disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
 
-    .ql-atc-btn.disabled {
-      background: #ddd;
-      color: #aaa;
-      cursor: not-allowed;
-    }
-
-    /* Full details link */
     .ql-full-link {
       display: block;
       text-align: center;
@@ -441,20 +348,17 @@
       text-underline-offset: 3px;
       transition: color .15s ease;
     }
-
     .ql-full-link:hover { color: #111; }
 
-    /* Trust badges */
     .ql-trust-badges {
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 8px;
       padding: 14px;
       background: #f9f9f9;
       border-radius: 10px;
       margin-top: 4px;
     }
-
     .ql-trust-badge {
       display: flex;
       align-items: center;
@@ -463,29 +367,17 @@
       color: #444;
       font-weight: 500;
     }
+    .ql-trust-badge svg { flex-shrink: 0; color: #2d6a4f; }
 
-    .ql-trust-badge svg {
-      flex-shrink: 0;
-      color: #2d6a4f;
-    }
-
-    /* ── Mobile ─────────────────────────────────────────────────────── */
+    /* ── Mobile ─────────────────────────────────────────────────── */
     @media (max-width: 749px) {
-      .ql-modal {
-        grid-template-columns: 1fr;
-        max-height: 92vh;
-      }
-
-      .ql-image { min-height: 240px; max-height: 240px; }
-
+      .ql-modal { grid-template-columns: 1fr; max-height: 92vh; }
+      .ql-image { min-height: 220px; max-height: 260px; }
       .ql-details { padding: 20px 18px; gap: 12px; }
-
       .card__hover-actions { padding: 8px; }
-
       .card__hover-btn { padding: 9px 10px; font-size: 12px; }
     }
 
-    /* Prevent body scroll when modal open */
     body.ql-no-scroll { overflow: hidden; }
   </style>
 {%- endunless -%}
@@ -509,8 +401,8 @@
 
     assign color_option = nil
     for option in card_product.options_with_values
-      assign option_name_downcase = option.name | downcase
-      if option_name_downcase == 'color' or option_name_downcase == 'colour'
+      assign option_lc = option.name | downcase
+      if option_lc == 'color' or option_lc == 'colour'
         assign color_option = option
         break
       endif
@@ -522,17 +414,19 @@
       class="card card--enhanced{% if extend_height %} card--extend-height{% endif %}{% if horizontal_class %} card--horizontal{% endif %}"
       data-product-id="{{ card_product.id }}"
     >
-      <!-- Image + hover actions -->
-      <div class="card__media-wrapper" style="padding-top: {{ 1 | divided_by: ratio | times: 100 }}%; position: relative;">
 
-        <!-- Badge stack -->
+      <!-- Image + hover actions -->
+      <div
+        class="card__media-wrapper"
+        style="padding-top: {{ 1 | divided_by: ratio | times: 100 }}%; position: relative;"
+      >
+
+        <!-- Badges -->
         <div class="card__badge-stack">
           {%- if card_product.available == false -%}
             <span class="badge--pill badge--soldout">Sold Out</span>
           {%- elsif is_on_sale -%}
             <span class="badge--pill badge--sale">Sale</span>
-          {%- elsif card_product.created_at > 'now' | date: '%s' | minus: 2592000 | date: '%Y-%m-%dT%H:%M:%SZ' -%}
-            <span class="badge--pill badge--new">New</span>
           {%- endif -%}
         </div>
 
@@ -585,11 +479,12 @@
 
         <!-- Hover Action Bar -->
         <div class="card__hover-actions">
-          <!-- Quick Look -->
+
+          <!-- Quick Look button -->
           <button
             class="card__hover-btn card__hover-btn--quicklook"
+            type="button"
             data-ql-trigger
-            data-product-id="{{ card_product.id }}"
             data-product-title="{{ card_product.title | escape }}"
             data-product-url="{{ card_product.url }}"
             data-product-vendor="{{ card_product.vendor | escape }}"
@@ -602,22 +497,21 @@
             data-product-on-sale="{{ is_on_sale }}"
             data-product-colors="{%- if color_option -%}{{ color_option.values | join: '|' }}{%- endif -%}"
             aria-label="Quick look at {{ card_product.title | escape }}"
-            type="button"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             Quick Look
           </button>
 
-          <!-- Add to Cart / Choose Options -->
+          <!-- Add to Cart / Options / Sold Out -->
           {%- if card_product.variants_count > 1 -%}
             <a
               href="{{ card_product.url }}"
               class="card__hover-btn card__hover-btn--atc"
               aria-label="Choose options for {{ card_product.title | escape }}"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
               </svg>
@@ -626,23 +520,23 @@
           {%- elsif card_product.available -%}
             <button
               class="card__hover-btn card__hover-btn--atc js-quick-atc"
+              type="button"
               data-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
               aria-label="Add {{ card_product.title | escape }} to cart"
-              type="button"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
               </svg>
               Add to Cart
             </button>
           {%- else -%}
-            <button class="card__hover-btn card__hover-btn--atc sold-out" disabled type="button">
+            <button class="card__hover-btn card__hover-btn--atc sold-out" type="button" disabled>
               Sold Out
             </button>
           {%- endif -%}
-        </div>
 
+        </div>
       </div><!-- /.card__media-wrapper -->
 
       <!-- Card Info -->
@@ -657,10 +551,10 @@
           </a>
         </h3>
 
-        <!-- Rating -->
+        <!-- Star rating -->
         {%- if show_rating and card_product.metafields.reviews.rating.value != blank -%}
           {%- liquid
-            assign rating_val = card_product.metafields.reviews.rating.value.rating | round
+            assign rating_val   = card_product.metafields.reviews.rating.value.rating | round
             assign rating_count = card_product.metafields.reviews.rating_count
           -%}
           <div class="card__rating-row">
@@ -689,7 +583,7 @@
           {%- endif -%}
         </div>
 
-        <!-- Color swatches on card -->
+        <!-- Color swatches -->
         {%- if color_option -%}
           <div class="card__color-swatches">
             {%- for color_val in color_option.values limit: 6 -%}
@@ -702,7 +596,7 @@
               ></span>
             {%- endfor -%}
             {%- if color_option.values.size > 6 -%}
-              <span style="font-size:11px;color:#888;align-self:center;">+{{ color_option.values.size | minus: 6 }}</span>
+              <span style="font-size:11px;color:#888;">+{{ color_option.values.size | minus: 6 }}</span>
             {%- endif -%}
           </div>
         {%- endif -%}
@@ -712,10 +606,8 @@
   </div><!-- /.card-wrapper -->
 
 {%- else -%}
-  <!-- Placeholder card -->
   {%- liquid
     assign ratio = 1
-    assign placeholder = true
     if media_aspect_ratio == 'portrait'
       assign ratio = 0.8
     endif
@@ -745,160 +637,150 @@
 
 
 <!-- ════════════════════════════════════════════════════════════════
-     QUICK LOOK MODAL  (rendered once per page via JS deduplication)
-═══════════════════════════════════════════════════════════════ -->
+     QUICK LOOK MODAL — rendered once (first card only, skip_styles=false)
+══════════════════════════════════════════════════════════════════ -->
 {%- unless skip_styles -%}
-<div class="ql-overlay" id="quickLookOverlay" role="dialog" aria-modal="true" aria-label="Quick look" hidden>
+<div
+  class="ql-overlay"
+  id="quickLookOverlay"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Quick look"
+  hidden
+>
   <div class="ql-modal" id="quickLookModal">
 
-    <!-- Close -->
-    <button class="ql-close" id="quickLookClose" aria-label="Close quick look" type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <button class="ql-close" id="quickLookClose" type="button" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
         <path d="M18 6 6 18M6 6l12 12"/>
       </svg>
     </button>
 
-    <!-- Image -->
     <div class="ql-image">
-      <img id="quickLookImage" src="" alt="" style="width:100%;height:100%;object-fit:cover;">
+      <img id="quickLookImage" src="" alt="">
     </div>
 
-    <!-- Details -->
     <div class="ql-details">
       <div id="quickLookVendor" class="ql-vendor"></div>
       <h2 id="quickLookTitle" class="ql-title"></h2>
 
       <div class="ql-price-row">
         <span id="quickLookPrice" class="ql-price-current"></span>
-        <span id="quickLookCompare" class="ql-price-compare" style="display:none;"></span>
+        <span id="quickLookCompare" class="ql-price-compare"></span>
       </div>
 
       <p id="quickLookDesc" class="ql-description"></p>
 
-      <!-- Colors -->
-      <div id="quickLookColorSection" style="display:none;">
+      <div id="quickLookColorSection">
         <div class="ql-section-label">Color</div>
         <div id="quickLookSwatches" class="ql-swatches"></div>
       </div>
 
-      <!-- Add to Cart -->
       <button id="quickLookAtcBtn" class="ql-atc-btn" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
           <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
         </svg>
         Add to Cart
       </button>
 
-      <!-- Full details -->
-      <a id="quickLookFullLink" href="#" class="ql-full-link">View full details →</a>
+      <a id="quickLookFullLink" href="#" class="ql-full-link">View full details &rarr;</a>
 
-      <!-- Trust badges -->
       <div class="ql-trust-badges">
         <div class="ql-trust-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="1" y="3" width="15" height="13" rx="2"/>
             <path d="M16 8h4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-4"/>
             <path d="M12 16v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3"/>
-            <circle cx="7.5" cy="10.5" r=".5" fill="currentColor"/>
           </svg>
           Free shipping on orders over $150
         </div>
         <div class="ql-trust-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             <polyline points="9 12 11 14 15 10"/>
           </svg>
           Secure checkout guaranteed
         </div>
         <div class="ql-trust-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="23 4 23 10 17 10"/>
             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
           </svg>
           Easy 30-day returns
         </div>
       </div>
-    </div>
-  </div>
-</div>
+    </div><!-- /.ql-details -->
+  </div><!-- /.ql-modal -->
+</div><!-- /.ql-overlay -->
 
 <script>
 (function () {
-  // Guard: run setup only once across all card renders
   if (window.__qlSetup) return;
   window.__qlSetup = true;
 
-  const overlay  = document.getElementById('quickLookOverlay');
-  const modal    = document.getElementById('quickLookModal');
-  const closeBtn = document.getElementById('quickLookClose');
+  var overlay   = document.getElementById('quickLookOverlay');
+  var closeBtn  = document.getElementById('quickLookClose');
+  var elImage   = document.getElementById('quickLookImage');
+  var elVendor  = document.getElementById('quickLookVendor');
+  var elTitle   = document.getElementById('quickLookTitle');
+  var elPrice   = document.getElementById('quickLookPrice');
+  var elCompare = document.getElementById('quickLookCompare');
+  var elDesc    = document.getElementById('quickLookDesc');
+  var elColSec  = document.getElementById('quickLookColorSection');
+  var elSwatches= document.getElementById('quickLookSwatches');
+  var elAtcBtn  = document.getElementById('quickLookAtcBtn');
+  var elFullLink= document.getElementById('quickLookFullLink');
 
-  const elImage   = document.getElementById('quickLookImage');
-  const elVendor  = document.getElementById('quickLookVendor');
-  const elTitle   = document.getElementById('quickLookTitle');
-  const elPrice   = document.getElementById('quickLookPrice');
-  const elCompare = document.getElementById('quickLookCompare');
-  const elDesc    = document.getElementById('quickLookDesc');
-  const elColorSec= document.getElementById('quickLookColorSection');
-  const elSwatches= document.getElementById('quickLookSwatches');
-  const elAtcBtn  = document.getElementById('quickLookAtcBtn');
-  const elFullLink= document.getElementById('quickLookFullLink');
-
-  // -- Open modal --
   function openModal(btn) {
-    const d = btn.dataset;
+    var d = btn.dataset;
 
-    elImage.src    = d.productImage || '';
-    elImage.alt    = d.productTitle || '';
-    elVendor.textContent = d.productVendor || '';
-    elVendor.style.display = d.productVendor ? '' : 'none';
-    elTitle.textContent  = d.productTitle  || '';
-    elDesc.textContent   = d.productDescription || '';
+    elImage.src             = d.productImage || '';
+    elImage.alt             = d.productTitle || '';
+    elVendor.textContent    = d.productVendor || '';
+    elVendor.style.display  = d.productVendor ? '' : 'none';
+    elTitle.textContent     = d.productTitle  || '';
+    elDesc.textContent      = d.productDescription || '';
 
-    // Price
     elPrice.textContent = d.productPrice || '';
-    const onSale = d.productOnSale === 'true';
+    var onSale = d.productOnSale === 'true';
     elPrice.classList.toggle('on-sale', onSale);
     if (onSale && d.productComparePrice) {
-      elCompare.textContent = d.productComparePrice;
-      elCompare.style.display = '';
+      elCompare.textContent    = d.productComparePrice;
+      elCompare.style.display  = '';
     } else {
       elCompare.style.display = 'none';
     }
 
-    // Colors
-    const colors = d.productColors ? d.productColors.split('|').filter(Boolean) : [];
+    var colors = d.productColors ? d.productColors.split('|').filter(Boolean) : [];
     if (colors.length) {
-      elColorSec.style.display = '';
-      elSwatches.innerHTML = colors.map((c, i) =>
-        `<span class="ql-swatch${i === 0 ? ' active' : ''}" style="background-color:${c.toLowerCase().replace(/ /g,'')}" title="${c}" aria-label="${c}"></span>`
-      ).join('');
-      elSwatches.querySelectorAll('.ql-swatch').forEach(sw => {
-        sw.addEventListener('click', () => {
-          elSwatches.querySelectorAll('.ql-swatch').forEach(s => s.classList.remove('active'));
+      elColSec.style.display = '';
+      elSwatches.innerHTML = colors.map(function(c, i) {
+        var bg = c.toLowerCase().replace(/ /g, '');
+        return '<span class="ql-swatch' + (i === 0 ? ' active' : '') + '" style="background-color:' + bg + '" title="' + c + '" aria-label="' + c + '"></span>';
+      }).join('');
+      elSwatches.querySelectorAll('.ql-swatch').forEach(function(sw) {
+        sw.addEventListener('click', function() {
+          elSwatches.querySelectorAll('.ql-swatch').forEach(function(s){ s.classList.remove('active'); });
           sw.classList.add('active');
         });
       });
     } else {
-      elColorSec.style.display = 'none';
+      elColSec.style.display = 'none';
     }
 
-    // ATC
-    const available = d.productAvailable === 'true';
+    var available = d.productAvailable === 'true';
     elAtcBtn.dataset.variantId = d.productVariantId || '';
-    if (available) {
-      elAtcBtn.disabled = false;
-      elAtcBtn.classList.remove('disabled');
-      elAtcBtn.querySelector('span') && (elAtcBtn.querySelector('span').textContent = 'Add to Cart');
-    } else {
-      elAtcBtn.disabled = true;
-      elAtcBtn.classList.add('disabled');
+    elAtcBtn.disabled = !available;
+    elAtcBtn.classList.toggle('disabled', !available);
+    if (!available) {
       elAtcBtn.textContent = 'Sold Out';
+    } else {
+      elAtcBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> Add to Cart';
     }
 
     elFullLink.href = d.productUrl || '#';
 
-    // Show
     overlay.hidden = false;
     overlay.classList.add('is-open');
     document.body.classList.add('ql-no-scroll');
@@ -911,74 +793,61 @@
     document.body.classList.remove('ql-no-scroll');
   }
 
-  // -- Event: Quick Look triggers (delegated) --
-  document.addEventListener('click', function (e) {
-    const btn = e.target.closest('[data-ql-trigger]');
-    if (btn) { e.preventDefault(); openModal(btn); return; }
+  document.addEventListener('click', function(e) {
+    var qlBtn = e.target.closest('[data-ql-trigger]');
+    if (qlBtn) { e.preventDefault(); openModal(qlBtn); return; }
 
-    // Close on overlay backdrop
     if (e.target === overlay) { closeModal(); return; }
 
-    // Quick ATC
-    const atcBtn = e.target.closest('.js-quick-atc');
-    if (atcBtn) { e.preventDefault(); quickAddToCart(atcBtn.dataset.variantId, atcBtn); }
+    var atcBtn = e.target.closest('.js-quick-atc');
+    if (atcBtn) { e.preventDefault(); quickATC(atcBtn.dataset.variantId, atcBtn, false); }
   });
 
   closeBtn.addEventListener('click', closeModal);
 
-  document.addEventListener('keydown', function (e) {
+  document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeModal();
   });
 
-  // Modal ATC button
-  elAtcBtn.addEventListener('click', function () {
-    const variantId = elAtcBtn.dataset.variantId;
-    if (variantId) quickAddToCart(variantId, elAtcBtn, true);
+  elAtcBtn.addEventListener('click', function() {
+    if (elAtcBtn.dataset.variantId) quickATC(elAtcBtn.dataset.variantId, elAtcBtn, true);
   });
 
-  // -- Add to cart fetch helper --
-  function quickAddToCart(variantId, triggerEl, isModal) {
+  function quickATC(variantId, el, isModal) {
     if (!variantId) return;
-    const originalHTML = triggerEl.innerHTML;
-    triggerEl.disabled = true;
-    triggerEl.innerHTML = isModal
-      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Adding…'
-      : '…';
+    var orig = el.innerHTML;
+    el.disabled = true;
+    el.innerHTML = isModal ? 'Adding&hellip;' : '&hellip;';
 
     fetch('/cart/add.js', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify({ id: variantId, quantity: 1 })
     })
-    .then(r => r.json())
-    .then(() => {
-      triggerEl.innerHTML = isModal
-        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Added!'
-        : '✓ Added';
-      triggerEl.style.background = '#2d6a4f';
+    .then(function(r){ return r.json(); })
+    .then(function() {
+      el.innerHTML = isModal ? '&#10003; Added!' : '&#10003; Added';
+      el.style.background = '#2d6a4f';
 
-      // Refresh cart count
       fetch('/cart.js')
-        .then(r => r.json())
-        .then(cart => {
-          const counters = document.querySelectorAll('[data-cart-count], .cart-count-bubble');
-          counters.forEach(el => {
+        .then(function(r){ return r.json(); })
+        .then(function(cart) {
+          document.querySelectorAll('[data-cart-count], .cart-count-bubble').forEach(function(el) {
             el.textContent = cart.item_count;
-            el.setAttribute('aria-label', cart.item_count + ' items');
           });
           document.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
         });
 
-      setTimeout(() => {
-        triggerEl.disabled = false;
-        triggerEl.innerHTML = originalHTML;
-        triggerEl.style.background = '';
+      setTimeout(function() {
+        el.disabled = false;
+        el.innerHTML = orig;
+        el.style.background = '';
         if (isModal) closeModal();
       }, 1600);
     })
-    .catch(() => {
-      triggerEl.disabled = false;
-      triggerEl.innerHTML = originalHTML;
+    .catch(function() {
+      el.disabled = false;
+      el.innerHTML = orig;
     });
   }
 })();
