@@ -425,30 +425,11 @@
 
     /* ── Mobile ─────────────────────────────────────────────────── */
     @media (max-width: 749px) {
-      /* ── Quick Look modal ── */
       .ql-modal { grid-template-columns: 1fr; max-height: 92vh; }
       .ql-image { min-height: 220px; max-height: 260px; }
       .ql-details { padding: 20px 18px; gap: 12px; }
-
-      /* ── Card hover action bar ──
-        On touch devices :hover never fires, so always show the bar.
-        Drop Quick Look (less useful on mobile) and let ATC fill the width. */
-      .card__hover-actions {
-        transform: translateY(0);   /* always visible — no hover needed */
-        padding: 10px 12px;
-        gap: 0;                     /* single button, no gap needed */
-      }
-
-      /* Hide Quick Look on mobile — tap the image/title to go to PDP instead */
-      .card__hover-btn--quicklook { display: none; }
-
-      /* ATC / Options button takes full width */
-      .card__hover-btn--atc {
-        flex: 1;
-        padding: 10px 12px;
-        font-size: 12.5px;
-        border-radius: 8px;
-      }
+      .card__hover-actions { padding: 8px; }
+      .card__hover-btn { padding: 9px 10px; font-size: 12px; }
     }
 
     body.ql-no-scroll { overflow: hidden; }
