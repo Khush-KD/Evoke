@@ -18,7 +18,6 @@
   - placeholder_image: {String} Default: 'product-apparel-2'
   - show_quick_actions: {Boolean} Default: true
   - show_otherhover_actions: {Boolean} Default: true
-  - show_hover_actions_mobile: {Boolean} Default: true
 {% endcomment %}
 
 {%- unless skip_styles -%}
@@ -481,7 +480,6 @@
 
   <div class="card-wrapper product-card-wrapper underline-links-hover">
     <div
-      class="card card--enhanced{% if extend_height %} card--extend-height{% endif %}{% if horizontal_class %} card--horizontal{% endif %}{% if show_hover_actions_mobile == false %} card--no-mobile-actions{% endif %}"
       class="card card--enhanced{% if extend_height %} card--extend-height{% endif %}{% if horizontal_class %} card--horizontal{% endif %}"
       data-product-id="{{ card_product.id }}"
     >
