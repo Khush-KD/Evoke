@@ -64,13 +64,30 @@
     justify-content: flex-end;
     margin-top: 25px;
   }
+  
+  /* FIXED: Tight Spacing between Subtitle and Heading */
   .collection__subtitle {
-    margin-top: 8px;
-    font-size: 14px;
-    letter-spacing: 0.1;
+    display: block;
+    margin: 0 0 6px 0; /* Tight bottom margin */
+    padding: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: rgba(var(--color-foreground), 0.7);
+    line-height: 1.2;
   }
+  
+  /* FIXED: Neutralize heavy default theme margins on heading title */
+  .collection__title-text .title {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .collection__title-text .collection__description {
+    margin-top: 10px;
+  }
+
   .featured-collection-progressbar {
     height: 3px;
     width: 100%;
