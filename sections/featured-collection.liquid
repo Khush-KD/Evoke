@@ -36,6 +36,24 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  /* View All — top-right layout */
+  .collection__title--with-viewall {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .collection__title--with-viewall .collection__title-text {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .collection__viewall-top {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
 {%- endstyle -%}
 
 {%- liquid
