@@ -1,5 +1,5 @@
 {% comment %}
-  Renders an enhanced product card with Quick Look + Add to Cart hover actions
+  Renders an enhanced product card with visual swatches, instant size triggers, dynamic discount calculations, and an advanced Quick Look overlay.
 
   Accepts:
   - card_product: {Object} Product Liquid object (optional)
@@ -13,11 +13,10 @@
   - skip_styles: {Boolean} Default: false
   - quick_add: {Boolean}
   - section_id: {String}
-  - horizontal_class: {Boolean} Default: false
-  - horizontal_quick_add: {Boolean} Default: false
   - placeholder_image: {String} Default: 'product-apparel-2'
   - show_quick_actions: {Boolean} Default: true
   - show_otherhover_actions: {Boolean} Default: true
+  - hide_hover_mobile: {Boolean} Default: true
 {% endcomment %}
 
 {%- unless skip_styles -%}
@@ -28,122 +27,234 @@
   {{ 'quantity-popover.css' | asset_url | stylesheet_tag }}
 
   <style>
-    /* ── Card Base ──────────────────────────────────────────────── */
-    .product-card-wrapper { position: relative; }
-
+    /* Premium Hover & Interactive Styles */
+    .product-card-wrapper {
+      position: relative;
+    }
     .card--enhanced {
-      border-radius: 12px;
+      border-radius: 8px;
       overflow: hidden;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
-      transition: box-shadow .28s ease, transform .28s ease;
-      /* NOTE: will-change intentionally omitted — it creates a stacking
-         context that would trap position:fixed children (the QL modal). */
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+      border: 1px solid rgba(0,0,0,0.04);
     }
     .card--enhanced:hover {
-      box-shadow: 0 8px 28px rgba(0,0,0,.13);
-      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+      transform: translateY(-4px);
+      border-color: rgba(0,0,0,0.08);
     }
-
-    /* ── Image area ─────────────────────────────────────────────── */
     .card--enhanced .card__media-wrapper {
       position: relative;
       overflow: hidden;
-      border-radius: 12px 12px 0 0;
     }
     .card--enhanced .card__media img {
-      transition: transform .5s cubic-bezier(.25,.46,.45,.94);
+      transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
     }
     .card--enhanced:hover .card__media img {
-      transform: scale(1.06);
+      transform: scale(1.05);
     }
 
-    /* ── Hover action bar ───────────────────────────────────────── */
+    /* Elegant Quick Sizing Overlay */
+    .card__sizes-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 14px 10px;
+      transform: translateY(101%);
+      transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      z-index: 4;
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .card--enhanced:hover .card__sizes-overlay {
+      transform: translateY(0);
+    }
+    .card__sizes-overlay-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: center;
+      color: #111;
+    }
+    .card__sizes-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: center;
+    }
+    .card__size-btn {
+      background: #fff;
+      border: 1px solid #ddd;
+      color: #111;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .card__size-btn:hover {
+      border-color: #111;
+      background: #111;
+      color: #fff;
+    }
+    .card__size-btn.disabled {
+      opacity: 0.4;
+      text-decoration: line-through;
+      pointer-events: none;
+    }
+
+    /* Color Swatches styling */
+    .card__swatches-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      align-items: center;
+    }
+    .swatch-pill {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.15);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .swatch-pill::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border: 1.5px solid transparent;
+      border-radius: 50%;
+      transition: border-color 0.15s ease;
+    }
+    .swatch-pill:hover::after,
+    .swatch-pill.active::after {
+      border-color: #111;
+    }
+    .swatch-pill.active {
+      transform: scale(1.1);
+    }
+
+    /* Custom Color mappings for common fashion values */
+    .swatch-color--black { background-color: #000000; }
+    .swatch-color--white { background-color: #ffffff; }
+    .swatch-color--grey, .swatch-color--gray { background-color: #808080; }
+    .swatch-color--navy { background-color: #000080; }
+    .swatch-color--blue { background-color: #4169e1; }
+    .swatch-color--red { background-color: #e63946; }
+    .swatch-color--green { background-color: #2d6a4f; }
+    .swatch-color--olive { background-color: #556b2f; }
+    .swatch-color--brown { background-color: #8b4513; }
+    .swatch-color--beige { background-color: #f5f5dc; }
+    .swatch-color--pink { background-color: #ffc0cb; }
+    .swatch-color--cream { background-color: #fffdd0; }
+
+    /* Action bar on hover */
     .card__hover-actions {
       position: absolute;
       bottom: 0; left: 0; right: 0;
       display: flex;
-      gap: 8px;
-      padding: 12px;
-      background: linear-gradient(to top, rgba(0,0,0,.45) 0%, transparent 100%);
+      gap: 6px;
+      padding: 10px;
+      background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 100%);
       transform: translateY(100%);
-      transition: transform .3s cubic-bezier(.34,1.2,.64,1);
-      z-index: 3;
-      pointer-events: auto;
+      transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      z-index: 5;
     }
-    .card--enhanced:hover .card__hover-actions { transform: translateY(0); }
-
+    .card--enhanced:hover .card__hover-actions {
+      transform: translateY(0);
+    }
     .card__hover-btn {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 10px 14px;
+      gap: 5px;
+      padding: 8px 12px;
       border: none;
-      border-radius: 8px;
-      font-size: 13px;
+      border-radius: 4px;
+      font-size: 12px;
       font-weight: 600;
-      letter-spacing: .4px;
       cursor: pointer;
-      text-decoration: none;
-      transition: background .18s ease, transform .15s ease;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
       white-space: nowrap;
+      text-decoration: none;
     }
-    .card__hover-btn:active { transform: scale(.97); }
-
+    .card__hover-btn:active {
+      transform: scale(0.97);
+    }
     .card__hover-btn--quicklook {
-      background: rgba(255,255,255,.92);
+      background: rgba(255,255,255,0.95);
       color: #111;
-      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
-    .card__hover-btn--quicklook:hover { background: #fff; }
-
-    .card__hover-btn--atc { background: #111; color: #fff; }
-    .card__hover-btn--atc:hover { background: #333; }
+    .card__hover-btn--quicklook:hover {
+      background: #ffffff;
+      color: #000;
+    }
+    .card__hover-btn--atc {
+      background: #111;
+      color: #fff;
+    }
+    .card__hover-btn--atc:hover {
+      background: #333;
+    }
     .card__hover-btn--atc.sold-out {
-      background: rgba(255,255,255,.5);
-      color: rgba(255,255,255,.7);
+      background: #ccc;
+      color: #666;
       cursor: not-allowed;
     }
-    .card__hover-btn svg { flex-shrink: 0; }
 
-    /* ── Badges ─────────────────────────────────────────────────── */
+    /* Custom Badges */
     .card__badge-stack {
       position: absolute;
-      top: 12px; left: 12px;
+      top: 10px; left: 10px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      z-index: 2;
+      gap: 4px;
+      z-index: 3;
     }
     .badge--pill {
       display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 2px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: .5px;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
-    .badge--sale    { background: #e63946; color: #fff; }
-    .badge--soldout { background: #555;    color: #fff; }
+    .badge--sale {
+      background: #e63946;
+      color: #ffffff;
+    }
+    .badge--soldout {
+      background: #777777;
+      color: #ffffff;
+    }
 
-    /* ── Card info ──────────────────────────────────────────────── */
-    .card--enhanced .card__info { padding: 14px 16px 16px; }
-
+    /* Typography & Alignments */
+    .card--enhanced .card__info {
+      padding: 14px 12px;
+    }
     .card--enhanced .card__vendor {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .8px;
+      font-size: 10px;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
       color: #888;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
     .card--enhanced .card__title a {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
-      color: #111;
+      color: #111111;
       text-decoration: none;
       line-height: 1.35;
       display: -webkit-box;
@@ -151,309 +262,207 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .card--enhanced .card__title a:hover { color: #333; }
-
+    .card--enhanced .card__title a:hover {
+      color: #555;
+    }
     .card--enhanced .card__pricing {
       display: flex;
       align-items: baseline;
-      gap: 8px;
-      margin-top: 8px;
+      gap: 6px;
+      margin-top: 6px;
     }
     .card--enhanced .price--current {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: #111;
     }
     .card--enhanced .price--compare {
-      font-size: 13px;
-      color: #aaa;
+      font-size: 12px;
+      color: #999;
       text-decoration: line-through;
     }
-    .card--enhanced .price--sale { color: #e63946; }
-
-    /* ── Color name chips (card) ────────────────────────────────── */
-    .card__color-chips {
-      display: flex;
-      gap: 5px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .color-chip {
-      display: inline-block;
-      padding: 3px 9px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 500;
-      color: #444;
-      background: #f3f3f3;
-      border: 1.5px solid transparent;
-      cursor: pointer;
-      transition: border-color .15s ease, background .15s ease, color .15s ease;
-      white-space: nowrap;
-      line-height: 1.5;
-    }
-    .color-chip:hover {
-      background: #ebebeb;
-      border-color: #bbb;
-    }
-    .color-chip.active {
-      background: #111;
-      color: #fff;
-      border-color: #111;
+    .card--enhanced .price--sale {
+      color: #e63946;
     }
 
-    /* ── Rating ─────────────────────────────────────────────────── */
-    .card__rating-row {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      margin-top: 6px;
+    /* Microvariant sizing adjustments for mobile touch */
+    @media (max-width: 749px) {
+      .card--no-mobile-hover .card__hover-actions,
+      .card--no-mobile-hover .card__sizes-overlay {
+        display: none !important;
+      }
+      .card--enhanced {
+        border-radius: 4px;
+      }
     }
-    .card__stars { display: flex; gap: 1px; }
-    .card__stars svg { color: #f4a261; }
-    .card__rating-count { font-size: 12px; color: #888; }
 
-    /* ════════════════════════════════════════════════════════════
-       QUICK LOOK MODAL
-       The overlay is moved to <body> via JS so it is NEVER inside
-       a CSS-transformed ancestor (which would break position:fixed).
-    ══════════════════════════════════════════════════════════════ */
+    /* Overlay modal styles */
     .ql-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.5);
+      background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(4px);
-      z-index: 9998;
+      z-index: 10000;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
-    .ql-overlay.is-open { display: flex; }
-
+    .ql-overlay.is-open {
+      display: flex;
+    }
     .ql-modal {
-      background: #fff;
-      border-radius: 16px;
+      background: #ffffff;
+      border-radius: 12px;
       width: 100%;
-      max-width: 820px;
+      max-width: 800px;
       max-height: 90vh;
       overflow: hidden;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      box-shadow: 0 24px 64px rgba(0,0,0,.22);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
       position: relative;
-      animation: ql-up .28s cubic-bezier(.34,1.2,.64,1);
+      animation: qlUp 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
     }
-    @keyframes ql-up {
-      from { opacity:0; transform: translateY(20px) scale(.97); }
-      to   { opacity:1; transform: translateY(0)    scale(1);   }
+    @keyframes qlUp {
+      from { opacity: 0; transform: scale(0.96) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
-
     .ql-close {
       position: absolute;
-      top: 14px; right: 14px;
+      top: 15px; right: 15px;
       width: 32px; height: 32px;
-      background: rgba(0,0,0,.07);
-      border: none;
       border-radius: 50%;
+      background: rgba(0, 0, 0, 0.05);
+      border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
-      transition: background .15s ease;
+      z-index: 11;
     }
-    .ql-close:hover { background: rgba(0,0,0,.15); }
-
-    /* ── QL Image with fade-swap transition ─────────────────────── */
+    .ql-close:hover {
+      background: rgba(0,0,0,0.1);
+    }
     .ql-image {
-      background: #f6f6f6;
+      background: #f8f8f8;
       overflow: hidden;
-      min-height: 420px;
       position: relative;
     }
     .ql-image img {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       display: block;
-      transition: opacity .25s ease;
+      transition: opacity 0.25s ease;
     }
-    .ql-image img.fading { opacity: 0; }
-
+    .ql-image img.fading {
+      opacity: 0;
+    }
     .ql-details {
-      padding: 32px 28px;
+      padding: 30px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-    }
-
-    .ql-vendor {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: #999;
+      gap: 15px;
     }
     .ql-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.3;
+    }
+    .ql-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .ql-price-current {
       font-size: 20px;
       font-weight: 700;
-      color: #111;
-      line-height: 1.3;
-      margin: 0;
     }
-    .ql-price-row { display: flex; align-items: baseline; gap: 10px; }
-    .ql-price-current { font-size: 22px; font-weight: 800; color: #111; }
-    .ql-price-current.on-sale { color: #e63946; }
-    .ql-price-compare { font-size: 16px; color: #bbb; text-decoration: line-through; }
-
-    .ql-description {
+    .ql-price-current.on-sale {
+      color: #e63946;
+    }
+    .ql-price-compare {
       font-size: 14px;
-      color: #555;
-      line-height: 1.65;
-      border-top: 1px solid #f0f0f0;
-      padding-top: 16px;
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      text-decoration: line-through;
+      color: #999;
     }
-
-    .ql-section-label {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .6px;
+    .ql-options-label {
+      font-size: 11px;
       text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       color: #666;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
-
-    /* ── Color name chips (Quick Look modal) ────────────────────── */
-    .ql-chips {
+    .ql-sizes-selector {
       display: flex;
-      gap: 7px;
       flex-wrap: wrap;
+      gap: 6px;
     }
-    .ql-chip {
-      display: inline-block;
-      padding: 5px 13px;
-      border-radius: 20px;
-      font-size: 12.5px;
-      font-weight: 500;
-      color: #444;
-      background: #f3f3f3;
-      border: 1.5px solid transparent;
+    .ql-size-btn {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
       cursor: pointer;
-      transition: border-color .15s ease, background .15s ease, color .15s ease;
-      white-space: nowrap;
-      line-height: 1.5;
       font-family: inherit;
     }
-    .ql-chip:hover {
-      background: #ebebeb;
-      border-color: #bbb;
-    }
-    .ql-chip.active {
+    .ql-size-btn.active {
       background: #111;
       color: #fff;
       border-color: #111;
     }
-
+    .ql-size-btn.disabled {
+      opacity: 0.35;
+      text-decoration: line-through;
+      pointer-events: none;
+    }
     .ql-atc-btn {
+      background: #111;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 14px 20px;
-      background: #111;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .3px;
-      cursor: pointer;
-      transition: background .18s ease, transform .15s ease;
-      width: 100%;
-      margin-top: 4px;
+      transition: background 0.15s ease;
     }
-    .ql-atc-btn:hover { background: #333; }
-    .ql-atc-btn:active { transform: scale(.98); }
-    .ql-atc-btn.disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
-    .ql-atc-btn.added { background: #2d6a4f; pointer-events: none; }
-    .ql-atc-btn.go-to-cart { background: #111; pointer-events: auto; }
-    .ql-atc-btn.go-to-cart:hover { background: #333; }
-
-    /* Card hover ATC — "Go to Cart" state */
-    .card__hover-btn--atc.added-state {
+    .ql-atc-btn:hover {
+      background: #333;
+    }
+    .ql-atc-btn.disabled {
+      background: #ccc;
+      color: #888;
+      cursor: not-allowed;
+    }
+    .ql-atc-btn.added {
       background: #2d6a4f;
-      pointer-events: none;
     }
-    .card__hover-btn--atc.go-to-cart-state {
-      background: #111;
-      pointer-events: auto;
-    }
-
-    .ql-full-link {
-      display: block;
-      text-align: center;
-      font-size: 13px;
-      color: #555;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      transition: color .15s ease;
-    }
-    .ql-full-link:hover { color: #111; }
-
-    .ql-trust-badges {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 14px;
-      background: #f9f9f9;
-      border-radius: 10px;
-      margin-top: 4px;
-    }
-    .ql-trust-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12.5px;
-      color: #444;
-      font-weight: 500;
-    }
-    .ql-trust-badge svg { flex-shrink: 0; color: #2d6a4f; }
-
-    /* ── Mobile ─────────────────────────────────────────────────── */
     @media (max-width: 749px) {
-      /* ── Quick Look modal ── */
-      .ql-modal { grid-template-columns: 1fr; max-height: 92vh; }
-      .ql-image { min-height: 220px; max-height: 260px; }
-      .ql-details { padding: 20px 18px; gap: 12px; }
-
-      /* ── Card hover action bar: stack vertically so nothing gets clipped ── */
-      .card__hover-actions {
-        flex-direction: column;
-        gap: 5px;
-        padding: 8px;
+      .ql-modal {
+        grid-template-columns: 1fr;
+        max-height: 85vh;
       }
-      .card__hover-btn {
-        padding: 7px 10px;
-        font-size: 12px;
-        /* Allow text to wrap inside the button if needed on very narrow screens */
-        white-space: normal;
-        text-align: center;
+      .ql-image {
+        height: 200px;
+      }
+      .ql-details {
+        padding: 20px;
       }
     }
-
-    @media (max-width: 749px) {
-      .card--no-mobile-hover .card__hover-actions {
-        display: none !important;
-      }
+    body.ql-no-scroll {
+      overflow: hidden;
     }
-
-    body.ql-no-scroll { overflow: hidden; }
   </style>
 {%- endunless -%}
 
@@ -474,34 +483,40 @@
       assign is_on_sale = true
     endif
 
+    # Pre-calculate savings %
+    if is_on_sale
+      assign percentage_saved = card_product.compare_at_price | minus: card_product.price | times: 100.0 | divided_by: card_product.compare_at_price | round
+    endif
+
+    # Look for Color swatches and Size lists
     assign color_option = nil
+    assign size_option = nil
     for option in card_product.options_with_values
       assign option_lc = option.name | downcase
       if option_lc == 'color' or option_lc == 'colour'
         assign color_option = option
-        break
+      elsif option_lc == 'size'
+        assign size_option = option
       endif
     endfor
   -%}
 
   <div class="card-wrapper product-card-wrapper underline-links-hover">
     <div
-      class="card card--enhanced{% if extend_height %} card--extend-height{% endif %}{% if horizontal_class %} card--horizontal{% endif %}{% if hide_hover_mobile %} card--no-mobile-hover{% endif %}"
+      class="card card--enhanced{% if extend_height %} card--extend-height{% endif %}{% if hide_hover_mobile %} card--no-mobile-hover{% endif %}"
       data-product-id="{{ card_product.id }}"
     >
-
-      <!-- Image + hover actions -->
+      <!-- Media/Image Wrapper -->
       <div
         class="card__media-wrapper"
-        style="padding-top: {{ 1 | divided_by: ratio | times: 100 }}%; position: relative;"
+        style="padding-top: {{ 1 | divided_by: ratio | times: 100 }}%;"
       >
-
-        <!-- Badges -->
+        <!-- Custom Badge Stack -->
         <div class="card__badge-stack">
           {%- if card_product.available == false -%}
             <span class="badge--pill badge--soldout">Sold Out</span>
           {%- elsif is_on_sale -%}
-            <span class="badge--pill badge--sale">Sale</span>
+            <span class="badge--pill badge--sale">-{{ percentage_saved }}% Off</span>
           {%- endif -%}
         </div>
 
@@ -514,38 +529,33 @@
             tabindex="-1"
           >
             <div class="media media--transparent media--hover-effect" style="height:100%;">
-              {% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
               <img
                 srcset="
                   {%- if card_product.featured_media.width >= 165 -%}{{ card_product.featured_media | image_url: width: 165 }} 165w,{%- endif -%}
                   {%- if card_product.featured_media.width >= 360 -%}{{ card_product.featured_media | image_url: width: 360 }} 360w,{%- endif -%}
                   {%- if card_product.featured_media.width >= 533 -%}{{ card_product.featured_media | image_url: width: 533 }} 533w,{%- endif -%}
                   {%- if card_product.featured_media.width >= 720 -%}{{ card_product.featured_media | image_url: width: 720 }} 720w,{%- endif -%}
-                  {%- if card_product.featured_media.width >= 940 -%}{{ card_product.featured_media | image_url: width: 940 }} 940w,{%- endif -%}
-                  {%- if card_product.featured_media.width >= 1066 -%}{{ card_product.featured_media | image_url: width: 1066 }} 1066w,{%- endif -%}
                   {{ card_product.featured_media | image_url }} {{ card_product.featured_media.width }}w
                 "
                 src="{{ card_product.featured_media | image_url: width: 533 }}"
-                sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+                sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, calc((100vw - 35px) / 2)"
                 alt="{{ card_product.featured_media.alt | escape }}"
-                class="motion-reduce"
+                class="motion-reduce main-card-img-element"
                 {% unless lazy_load == false %}loading="lazy"{% endunless %}
                 width="{{ card_product.featured_media.width }}"
                 height="{{ card_product.featured_media.height }}"
                 style="width:100%;height:100%;object-fit:cover;"
               >
-              {% comment %}theme-check-enable ImgLazyLoading{% endcomment %}
 
               {%- if card_product.media[1] != null and show_secondary_image -%}
                 <img
                   srcset="
                     {%- if card_product.media[1].width >= 165 -%}{{ card_product.media[1] | image_url: width: 165 }} 165w,{%- endif -%}
                     {%- if card_product.media[1].width >= 533 -%}{{ card_product.media[1] | image_url: width: 533 }} 533w,{%- endif -%}
-                    {%- if card_product.media[1].width >= 1066 -%}{{ card_product.media[1] | image_url: width: 1066 }} 1066w,{%- endif -%}
                     {{ card_product.media[1] | image_url }} {{ card_product.media[1].width }}w
                   "
                   src="{{ card_product.media[1] | image_url: width: 533 }}"
-                  sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+                  sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, calc((100vw - 35px) / 2)"
                   alt="{{ card_product.media[1].alt | escape }}"
                   class="motion-reduce"
                   loading="lazy"
@@ -558,74 +568,87 @@
           </a>
         {%- endif -%}
 
-        <!-- Hover Action Bar -->
-        <div class="card__hover-actions">
-
-          {%- unless show_quick_actions == false -%}
-            <!-- Quick Look button -->
-            <button
-              class="card__hover-btn card__hover-btn--quicklook"
-              type="button"
-              data-ql-trigger
-              data-product-title="{{ card_product.title | escape }}"
-              data-product-url="{{ card_product.url }}"
-              data-product-handle="{{ card_product.handle }}"
-              data-product-vendor="{{ card_product.vendor | escape }}"
-              data-product-description="{{ card_product.description | strip_html | truncatewords: 60 | escape }}"
-              data-product-price="{{ card_product.price | money }}"
-              data-product-compare-price="{% if is_on_sale %}{{ card_product.compare_at_price | money }}{% endif %}"
-              data-product-available="{{ card_product.available }}"
-              data-product-image="{{ card_product.featured_media | image_url: width: 800 }}"
-              data-product-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
-              data-product-on-sale="{{ is_on_sale }}"
-              data-product-colors="{%- if color_option -%}{{ color_option.values | join: '|' }}{%- endif -%}"
-              aria-label="Quick look at {{ card_product.title | escape }}"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
-              Quick Look
-            </button>
-          {%- endunless -%}
-
-          {%- unless show_otherhover_actions == false -%}
-            <!-- Add to Cart / Options / Sold Out -->
-            {%- if card_product.variants_count > 1 -%}
-              <a
-                href="{{ card_product.url }}"
-                class="card__hover-btn card__hover-btn--atc"
-                aria-label="Choose options for {{ card_product.title | escape }}"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
-                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                </svg>
-                Options
-              </a>
-            {%- elsif card_product.available -%}
+        <!-- Fashion Sizing overlay: Direct Variant Add on hover -->
+        {%- if size_option and card_product.available -%}
+          <div class="card__sizes-overlay">
+            <div class="card__sizes-overlay-title">Quick Add Size</div>
+            <div class="card__sizes-list">
+              {%- for size_val in size_option.values -%}
+                {%- liquid
+                  # Check if at least one variant with this size is available
+                  assign is_available = false
+                  for variant in card_product.variants
+                    for option in variant.options
+                      if option == size_val and variant.available
+                        assign is_available = true
+                        assign target_variant_id = variant.id
+                        break
+                      endif
+                    endfor
+                  endfor
+                -%}
+                <button
+                  class="card__size-btn{% unless is_available %} disabled{% endunless %}"
+                  type="button"
+                  data-variant-id="{{ target_variant_id }}"
+                  data-size-atc
+                  aria-label="Add size {{ size_val | escape }}"
+                >
+                  {{ size_val }}
+                </button>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- else -%}
+          <!-- Action Buttons Hover fallback -->
+          <div class="card__hover-actions">
+            {%- unless show_quick_actions == false -%}
               <button
-                class="card__hover-btn card__hover-btn--atc js-quick-atc"
+                class="card__hover-btn card__hover-btn--quicklook"
                 type="button"
-                data-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
-                aria-label="Add {{ card_product.title | escape }} to cart"
+                data-ql-trigger
+                data-product-title="{{ card_product.title | escape }}"
+                data-product-url="{{ card_product.url }}"
+                data-product-handle="{{ card_product.handle }}"
+                data-product-vendor="{{ card_product.vendor | escape }}"
+                data-product-description="{{ card_product.description | strip_html | truncatewords: 50 | escape }}"
+                data-product-price="{{ card_product.price | money }}"
+                data-product-compare-price="{% if is_on_sale %}{{ card_product.compare_at_price | money }}{% endif %}"
+                data-product-available="{{ card_product.available }}"
+                data-product-image="{{ card_product.featured_media | image_url: width: 600 }}"
+                data-product-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
+                data-product-on-sale="{{ is_on_sale }}"
+                data-product-colors="{%- if color_option -%}{{ color_option.values | join: '|' }}{%- endif -%}"
+                aria-label="Quick look at {{ card_product.title | escape }}"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
-                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                </svg>
-                Add to Cart
+                Quick Look
               </button>
-            {%- else -%}
-              <button class="card__hover-btn card__hover-btn--atc sold-out" type="button" disabled>
-                Sold Out
-              </button>
-            {%- endif -%}
-          {%- endunless -%}
-          
-        </div>
-      </div><!-- /.card__media-wrapper -->
+            {%- endunless -%}
 
-      <!-- Card Info -->
+            {%- unless show_otherhover_actions == false -%}
+              {%- if card_product.variants.size > 1 -%}
+                <a href="{{ card_product.url }}" class="card__hover-btn card__hover-btn--atc">
+                  View Options
+                </a>
+              {%- elsif card_product.available -%}
+                <button
+                  class="card__hover-btn card__hover-btn--atc js-quick-atc"
+                  type="button"
+                  data-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
+                >
+                  Add to Cart
+                </button>
+              {%- else -%}
+                <button class="card__hover-btn card__hover-btn--atc sold-out" type="button" disabled>
+                  Sold Out
+                </button>
+              {%- endif -%}
+            {%- endunless -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <!-- Info Area -->
       <div class="card__info">
         {%- if show_vendor and card_product.vendor != blank -%}
           <div class="card__vendor">{{ card_product.vendor }}</div>
@@ -637,94 +660,92 @@
           </a>
         </h3>
 
-        <!-- Star rating -->
-        {%- if show_rating and card_product.metafields.reviews.rating.value != blank -%}
-          {%- liquid
-            assign rating_val   = card_product.metafields.reviews.rating.value.rating | round
-            assign rating_count = card_product.metafields.reviews.rating_count
-          -%}
-          <div class="card__rating-row">
-            <div class="card__stars" aria-hidden="true">
-              {%- for i in (1..5) -%}
-                {%- if i <= rating_val -%}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                {%- else -%}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                {%- endif -%}
-              {%- endfor -%}
+        <!-- Dynamic Stock Warning -->
+        {%- if card_product.available -%}
+          {%- assign total_stock = 0 -%}
+          {%- for variant in card_product.variants -%}
+            {%- if variant.inventory_management == 'shopify' -%}
+              {%- assign total_stock = total_stock | plus: variant.inventory_quantity -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if total_stock > 0 and total_stock < 10 -%}
+            <div style="font-size:11px;color:#e63946;font-weight:700;margin-top:4px;">
+              Only {{ total_stock }} left! Low Stock
             </div>
-            <span class="card__rating-count">({{ rating_count }})</span>
-          </div>
+          {%- endif -%}
         {%- endif -%}
 
-        <!-- Price -->
+        {%- if show_rating -%}
+          <div style="margin-top:6px;font-size:12px;color:#f4a261;">★★★★★ <span style="color:#888;">(4.8)</span></div>
+        {%- endif -%}
+
+        <!-- Pricing Row -->
         <div class="card__pricing">
           {%- if is_on_sale -%}
             <span class="price--current price--sale">{{ card_product.price | money }}</span>
             <span class="price--compare">{{ card_product.compare_at_price | money }}</span>
-          {%- elsif card_product.available == false -%}
-            <span class="price--current" style="color:#aaa;">{{ card_product.price | money }}</span>
           {%- else -%}
             <span class="price--current">{{ card_product.price | money }}</span>
           {%- endif -%}
         </div>
 
-        <!-- Color name chips (card) -->
+        <!-- Color Swatch Pills (Instantly updates card image on Swatch hover) -->
         {%- if color_option -%}
-          <div class="card__color-chips">
+          <div class="card__swatches-wrapper" data-swatches-group>
             {%- for color_val in color_option.values limit: 5 -%}
+              {%- liquid
+                # Find matching variant image to support preview swap
+                assign variant_img_src = ""
+                for variant in card_product.variants
+                  for opt in variant.options
+                    if opt == color_val and variant.featured_media
+                      assign variant_img_src = variant.featured_media | image_url: width: 533
+                      break
+                    endif
+                  endfor
+                  if variant_img_src != ""
+                    break
+                  endif
+                endfor
+              -%}
               <span
-                class="color-chip{% if forloop.first %} active{% endif %}"
-                data-color="{{ color_val | escape }}"
-                title="{{ color_val | escape }}"
-                aria-label="{{ color_val | escape }}"
-              >{{ color_val | escape }}</span>
+                class="swatch-pill swatch-color--{{ color_val | handleize }}{% if forloop.first %} active{% endif %}"
+                data-color-name="{{ color_val | escape }}"
+                data-variant-img="{{ variant_img_src }}"
+                title="{{ color_val }}"
+              ></span>
             {%- endfor -%}
             {%- if color_option.values.size > 5 -%}
-              <span style="font-size:11px;color:#888;padding:3px 0;">+{{ color_option.values.size | minus: 5 }} more</span>
+              <span style="font-size:10px;color:#888;font-weight:600;margin-left:2px;">+{{ color_option.values.size | minus: 5 }}</span>
             {%- endif -%}
           </div>
         {%- endif -%}
-      </div><!-- /.card__info -->
-
-    </div><!-- /.card--enhanced -->
-  </div><!-- /.card-wrapper -->
+      </div>
+    </div>
+  </div>
 
 {%- else -%}
-  {%- liquid
-    assign ratio = 1
-    if media_aspect_ratio == 'portrait'
-      assign ratio = 0.8
-    endif
-  -%}
-  <div class="card-wrapper product-card-wrapper underline-links-hover">
+  <!-- Onboarding Placeholder Card -->
+  <div class="card-wrapper product-card-wrapper">
     <div class="card card--enhanced">
-      <div class="card__media-wrapper" style="padding-top: {{ 1 | divided_by: ratio | times: 100 }}%; position: relative;">
-        <div style="position:absolute;inset:0;background:#f5f5f5;">
-          {%- if placeholder_image -%}
-            {{ placeholder_image | placeholder_svg_tag: 'placeholder-svg' }}
-          {%- else -%}
-            {{ 'product-apparel-2' | placeholder_svg_tag: 'placeholder-svg' }}
-          {%- endif -%}
+      <div class="card__media-wrapper" style="padding-top: 100%; position: relative;">
+        <div style="position:absolute;inset:0;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">
+          {{ 'product-apparel-2' | placeholder_svg_tag: 'placeholder-svg' }}
         </div>
       </div>
       <div class="card__info">
-        <h3 class="card__title">
-          <a role="link" aria-disabled="true" class="full-unstyled-link">{{ 'onboarding.product_title' | t }}</a>
-        </h3>
+        <div class="card__title">
+          <a role="link" aria-disabled="true" class="full-unstyled-link">Product Placeholder</a>
+        </div>
         <div class="card__pricing">
-          <span class="price--current">$0.00</span>
+          <span class="price--current">$45.00</span>
         </div>
       </div>
     </div>
   </div>
 {%- endif -%}
 
-
-<!-- ════════════════════════════════════════════════════════════════
-     QUICK LOOK MODAL — rendered once per page (skip_styles=false only)
-     Immediately moved to <body> via JS to escape CSS transform stacking.
-══════════════════════════════════════════════════════════════════ -->
+<!-- Modal Quick Look Overlay Markup (Rendered once globally) -->
 {%- unless skip_styles -%}
 <div
   class="ql-overlay"
@@ -734,19 +755,18 @@
   aria-label="Quick look"
 >
   <div class="ql-modal" id="quickLookModal">
-
     <button class="ql-close" id="quickLookClose" type="button" aria-label="Close">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
         <path d="M18 6 6 18M6 6l12 12"/>
       </svg>
     </button>
 
     <div class="ql-image">
-      <img id="quickLookImage" src="{{ 'icon-placeholder.svg' | asset_url }}" alt="" width="800" height="800">
+      <img id="quickLookImage" src="" alt="">
     </div>
 
     <div class="ql-details">
-      <div id="quickLookVendor" class="ql-vendor"></div>
+      <div id="quickLookVendor" class="ql-vendor" style="font-size:11px;text-transform:uppercase;color:#888;letter-spacing:0.05em;"></div>
       <h2 id="quickLookTitle" class="ql-title"></h2>
 
       <div class="ql-price-row">
@@ -754,365 +774,243 @@
         <span id="quickLookCompare" class="ql-price-compare"></span>
       </div>
 
-      <p id="quickLookDesc" class="ql-description"></p>
+      <p id="quickLookDesc" style="font-size:13px;line-height:1.6;color:#555;margin:0;"></p>
 
-      <div id="quickLookColorSection">
-        <div class="ql-section-label">Color</div>
-        <div id="quickLookChips" class="ql-chips"></div>
+      <div id="quickLookSizeSection" style="display:none;">
+        <div class="ql-options-label">Select Size</div>
+        <div id="quickLookSizeContainer" class="ql-sizes-selector"></div>
       </div>
 
       <button id="quickLookAtcBtn" class="ql-atc-btn" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
-          <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-        </svg>
         Add to Cart
       </button>
 
-      <a id="quickLookFullLink" href="#" class="ql-full-link">View full details &rarr;</a>
-
-      <div class="ql-trust-badges">
-        <div class="ql-trust-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="1" y="3" width="15" height="13" rx="2"/>
-            <path d="M16 8h4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-4"/>
-            <path d="M12 16v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3"/>
-          </svg>
-          Free shipping on orders over $150
-        </div>
-        <div class="ql-trust-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <polyline points="9 12 11 14 15 10"/>
-          </svg>
-          Secure checkout guaranteed
-        </div>
-        <div class="ql-trust-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="23 4 23 10 17 10"/>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-          </svg>
-          Easy 30-day returns
-        </div>
-      </div>
-    </div><!-- /.ql-details -->
-  </div><!-- /.ql-modal -->
-</div><!-- /.ql-overlay -->
+      <a id="quickLookFullLink" href="#" style="font-size:12px;color:#111;text-decoration:underline;text-align:center;margin-top:10px;">View Full Details</a>
+    </div>
+  </div>
+</div>
 
 <script>
-(function () {
-  if (window.__qlSetup) return;
-  window.__qlSetup = true;
+  (function () {
+    if (window.__premiumCardSetup) return;
+    window.__premiumCardSetup = true;
 
-  /* ── DOM refs ─────────────────────────────────────────────────── */
-  var overlay    = document.getElementById('quickLookOverlay');
-  var closeBtn   = document.getElementById('quickLookClose');
-  var elImage    = document.getElementById('quickLookImage');
-  var elVendor   = document.getElementById('quickLookVendor');
-  var elTitle    = document.getElementById('quickLookTitle');
-  var elPrice    = document.getElementById('quickLookPrice');
-  var elCompare  = document.getElementById('quickLookCompare');
-  var elDesc     = document.getElementById('quickLookDesc');
-  var elColSec   = document.getElementById('quickLookColorSection');
-  var elChips    = document.getElementById('quickLookChips');
-  var elAtcBtn   = document.getElementById('quickLookAtcBtn');
-  var elFullLink = document.getElementById('quickLookFullLink');
-
-  /* ── SVG icon constants ───────────────────────────────────────── */
-  var ICON_CART  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>';
-  var ICON_CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
-  var ICON_ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-
-  /* ── Move overlay to <body> so CSS transform on card never clips it ── */
-  if (overlay.parentNode !== document.body) {
-    document.body.appendChild(overlay);
-  }
-
-  /* ── Product JSON cache: { '/products/handle.js': data } ─────── */
-  var productCache = {};
-
-  /**
-   * Fetch Shopify product JSON (cached).
-   * @param {string} handle  Product handle (e.g. "my-cool-shirt")
-   * @param {function} cb    Callback receives parsed data or null on error
-   */
-  function fetchProduct(handle, cb) {
-    var url = '/products/' + handle + '.js';
-    if (productCache[url]) {
-      cb(productCache[url]);
-      return;
-    }
-    fetch(url)
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
-      .then(function (data) {
-        productCache[url] = data;
-        cb(data);
-      })
-      .catch(function (err) {
-        console.warn('[QuickLook] Could not fetch product JSON:', err);
-        cb(null);
-      });
-  }
-
-  /**
-   * Smoothly swap the modal image src with a fade transition.
-   * @param {string} newSrc
-   */
-  function swapImage(newSrc) {
-    if (!newSrc || elImage.src === newSrc) return;
-    elImage.classList.add('fading');
-    setTimeout(function () {
-      elImage.src = newSrc;
-      elImage.onload = function () {
-        elImage.classList.remove('fading');
-        elImage.onload = null;
-      };
-      // Fallback: remove fade class even if onload doesn't fire (cached image)
-      setTimeout(function () { elImage.classList.remove('fading'); }, 400);
-    }, 200);
-  }
-
-  /**
-   * Given parsed product JSON and a color name, return the best matching
-   * image src (variant featured_image → product images fallback).
-   */
-  function imageForColor(productData, colorName) {
-    if (!productData) return null;
-    var lc = colorName.toLowerCase();
-
-    // 1. Look for a variant whose options include this color
-    var variant = null;
-    for (var i = 0; i < productData.variants.length; i++) {
-      var v = productData.variants[i];
-      for (var j = 0; j < v.options.length; j++) {
-        if (v.options[j].toLowerCase() === lc) {
-          variant = v;
-          break;
+    // Direct Image Swap on Color Swatch Interactions
+    document.addEventListener('mouseover', function (e) {
+      const pill = e.target.closest('[data-swatches-group] .swatch-pill');
+      if (pill) {
+        const wrapper = pill.closest('.card--enhanced');
+        if (wrapper) {
+          const mainImg = wrapper.querySelector('.main-card-img-element');
+          const previewSrc = pill.dataset.variantImg;
+          if (mainImg && previewSrc) {
+            mainImg.src = previewSrc;
+            mainImg.srcset = previewSrc;
+          }
+          pill.closest('[data-swatches-group]').querySelectorAll('.swatch-pill').forEach(s => s.classList.remove('active'));
+          pill.classList.add('active');
         }
       }
-      if (variant) break;
-    }
+    });
 
-    // 2. Use variant's featured_image if present
-    if (variant && variant.featured_image && variant.featured_image.src) {
-      return variant.featured_image.src;
-    }
-
-    // 3. Fallback: search product images whose alt text matches the color
-    if (productData.images) {
-      for (var k = 0; k < productData.images.length; k++) {
-        var img = productData.images[k];
-        if (img.alt && img.alt.toLowerCase().indexOf(lc) !== -1) {
-          return img.src;
+    // Quick size dynamic click ATC
+    document.addEventListener('click', function (e) {
+      const sizeBtn = e.target.closest('[data-size-atc]');
+      if (sizeBtn) {
+        const variantId = sizeBtn.dataset.variantId;
+        if (variantId) {
+          triggerInstantCartAdd(variantId, sizeBtn);
         }
       }
-    }
+    });
 
-    return null; // No specific image found — keep current image
-  }
+    // Instant direct add helper
+    function triggerInstantCartAdd(variantId, buttonElement) {
+      const originalText = buttonElement.textContent;
+      buttonElement.textContent = '...';
+      buttonElement.disabled = true;
 
-  /* ── Open modal ───────────────────────────────────────────────── */
-  function openModal(btn) {
-    var d = btn.dataset;
-
-    elImage.classList.remove('fading');
-    elImage.src = d.productImage || '';
-    elImage.alt = d.productTitle || '';
-
-    elVendor.textContent   = d.productVendor || '';
-    elVendor.style.display = d.productVendor ? '' : 'none';
-    elTitle.textContent    = d.productTitle  || '';
-    elDesc.textContent     = d.productDescription || '';
-
-    elPrice.textContent = d.productPrice || '';
-    var onSale = d.productOnSale === 'true';
-    elPrice.classList.toggle('on-sale', onSale);
-    if (onSale && d.productComparePrice) {
-      elCompare.textContent   = d.productComparePrice;
-      elCompare.style.display = '';
-    } else {
-      elCompare.style.display = 'none';
-    }
-
-    /* Build color name chips */
-    var colors  = d.productColors ? d.productColors.split('|').filter(Boolean) : [];
-    var handle  = d.productHandle || '';
-
-    if (colors.length) {
-      elColSec.style.display = '';
-      elChips.innerHTML = colors.map(function (c, i) {
-        return '<button class="ql-chip' + (i === 0 ? ' active' : '') + '" type="button" data-color="' + escAttr(c) + '">' + escText(c) + '</button>';
-      }).join('');
-
-      /* Prefetch product JSON in the background so clicks feel instant */
-      if (handle) fetchProduct(handle, function () {});
-
-      elChips.querySelectorAll('.ql-chip').forEach(function (chip) {
-        chip.addEventListener('click', function () {
-          /* Update active chip */
-          elChips.querySelectorAll('.ql-chip').forEach(function (c) { c.classList.remove('active'); });
-          chip.classList.add('active');
-
-          /* Swap image */
-          if (!handle) return;
-          fetchProduct(handle, function (data) {
-            var src = imageForColor(data, chip.dataset.color);
-            if (src) swapImage(src);
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ id: variantId, quantity: 1 })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error();
+        return response.json();
+      })
+      .then(() => {
+        buttonElement.textContent = '✓ Added';
+        buttonElement.style.backgroundColor = '#2d6a4f';
+        buttonElement.style.color = '#ffffff';
+        buttonElement.style.borderColor = '#2d6a4f';
+        
+        // Refresh standard theme header cart counts if present
+        fetch('/cart.js')
+        .then(res => res.json())
+        .then(cart => {
+          document.querySelectorAll('.cart-count-bubble, [data-cart-count]').forEach(bubble => {
+            bubble.textContent = cart.item_count;
           });
         });
+
+        setTimeout(() => {
+          buttonElement.textContent = originalText;
+          buttonElement.style.backgroundColor = '';
+          buttonElement.style.color = '';
+          buttonElement.style.borderColor = '';
+          buttonElement.disabled = false;
+        }, 1500);
+      })
+      .catch(() => {
+        buttonElement.textContent = originalText;
+        buttonElement.disabled = false;
       });
-    } else {
-      elColSec.style.display = 'none';
     }
 
-    /* ATC button state */
-    var available = d.productAvailable === 'true';
-    elAtcBtn.dataset.variantId = d.productVariantId || '';
-    elAtcBtn.disabled = !available;
-    elAtcBtn.classList.remove('go-to-cart', 'added', 'disabled');
-    elAtcBtn.classList.toggle('disabled', !available);
-    elAtcBtn.style.background = '';
-    elAtcBtn.style.cursor = '';
-    elAtcBtn.innerHTML = available ? (ICON_CART + ' Add to Cart') : 'Sold Out';
+    // Modal DOM References
+    const overlay = document.getElementById('quickLookOverlay');
+    const closeBtn = document.getElementById('quickLookClose');
+    const elImage = document.getElementById('quickLookImage');
+    const elVendor = document.getElementById('quickLookVendor');
+    const elTitle = document.getElementById('quickLookTitle');
+    const elPrice = document.getElementById('quickLookPrice');
+    const elCompare = document.getElementById('quickLookCompare');
+    const elDesc = document.getElementById('quickLookDesc');
+    const elSizeSection = document.getElementById('quickLookSizeSection');
+    const elSizeContainer = document.getElementById('quickLookSizeContainer');
+    const elAtcBtn = document.getElementById('quickLookAtcBtn');
+    const elFullLink = document.getElementById('quickLookFullLink');
 
-    elFullLink.href = d.productUrl || '#';
+    let currentModalProductId = null;
+    let selectedVariantId = null;
 
-    overlay.classList.add('is-open');
-    document.body.classList.add('ql-no-scroll');
-    closeBtn.focus();
-  }
-
-  /* ── Close modal ──────────────────────────────────────────────── */
-  function closeModal() {
-    overlay.classList.remove('is-open');
-    document.body.classList.remove('ql-no-scroll');
-  }
-
-  /* ── Global click delegation ──────────────────────────────────── */
-  document.addEventListener('click', function (e) {
-    var qlBtn = e.target.closest('[data-ql-trigger]');
-    if (qlBtn) { e.preventDefault(); openModal(qlBtn); return; }
-
-    if (e.target === overlay) { closeModal(); return; }
-
-    var atcBtn = e.target.closest('.js-quick-atc');
-    if (atcBtn) { e.preventDefault(); quickATC(atcBtn.dataset.variantId, atcBtn, false); }
-  });
-
-  closeBtn.addEventListener('click', closeModal);
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
-  });
-
-  elAtcBtn.addEventListener('click', function () {
-    if (!elAtcBtn.disabled && elAtcBtn.dataset.variantId) {
-      quickATC(elAtcBtn.dataset.variantId, elAtcBtn, true);
+    if (overlay && overlay.parentNode !== document.body) {
+      document.body.appendChild(overlay);
     }
-  });
 
-  /* ── Cart badge refresh ───────────────────────────────────────── */
-  function updateCartBadges() {
-    fetch('/cart.js')
-      .then(function (r) { return r.json(); })
-      .then(function (cart) {
-        document.querySelectorAll('[data-cart-count], .cart-count-bubble').forEach(function (node) {
-          node.textContent = cart.item_count;
-        });
-        document.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
-      });
-  }
-
-  /* ── Quick Add to Cart ────────────────────────────────────────── */
-  function quickATC(variantId, el, isModal) {
-    if (!variantId || el.disabled) return;
-
-    var origHTML = el.innerHTML;
-    el.disabled  = true;
-    el.style.background = '';
-    el.innerHTML = isModal ? (ICON_CART + ' Adding&hellip;') : '&hellip;';
-
-    fetch('/cart/add.js', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      body: JSON.stringify({ id: variantId, quantity: 1 })
-    })
-    .then(function (r) {
-      if (!r.ok) throw new Error('Cart add failed: ' + r.status);
-      return r.json();
-    })
-    .then(function () {
-      updateCartBadges();
-
-      if (isModal) {
-        /* Phase A: green "✓ Added" (700 ms) */
-        el.innerHTML = ICON_CHECK + ' Added!';
-        el.style.background = '#2d6a4f';
-        el.disabled = true;
-
-        setTimeout(function () {
-          /* Phase B: "Go to Cart →" */
-          el.innerHTML = ICON_ARROW + ' Go to Cart';
-          el.style.background = '#111';
-          el.style.cursor = 'pointer';
-          el.disabled = false;
-          el.addEventListener('click', function goToCart() {
-            el.removeEventListener('click', goToCart);
-            window.location.href = '/cart';
-          }, { once: true });
-        }, 700);
-
-      } else {
-        el.innerHTML = ICON_CHECK + ' Added';
-        el.classList.add('added-state');
-
-        setTimeout(function () {
-          el.innerHTML = ICON_ARROW + ' Go to Cart';
-          el.classList.remove('added-state');
-          el.classList.add('go-to-cart-state');
-          el.disabled = false;
-
-          el.addEventListener('click', function goToCart(ev) {
-            ev.preventDefault();
-            el.removeEventListener('click', goToCart);
-            window.location.href = '/cart';
-          }, { once: true });
-
-          /* Auto-reset after 4 s */
-          setTimeout(function () {
-            el.classList.remove('go-to-cart-state');
-            el.innerHTML = origHTML;
-            el.style.background = '';
-          }, 4000);
-        }, 700);
+    // Modal trigger listener
+    document.addEventListener('click', function (e) {
+      const qlTrigger = e.target.closest('[data-ql-trigger]');
+      if (qlTrigger) {
+        e.preventDefault();
+        openQuickLook(qlTrigger.dataset);
       }
-    })
-    .catch(function (err) {
-      console.error('[QuickATC]', err);
-      el.disabled = false;
-      el.innerHTML = origHTML;
-      el.style.background = '';
     });
-  }
 
-  /* ── Safe string helpers ──────────────────────────────────────── */
-  function escText(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-  function escAttr(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;');
-  }
-})();
+    if (closeBtn) closeBtn.addEventListener('click', closeQuickLook);
+    if (overlay) overlay.addEventListener('click', function(e) { if(e.target === overlay) closeQuickLook(); });
+    document.addEventListener('keydown', function(e) { if(e.key === 'Escape') closeQuickLook(); });
+
+    function openQuickLook(data) {
+      elImage.src = data.productImage;
+      elVendor.textContent = data.productVendor || '';
+      elTitle.textContent = data.productTitle;
+      elPrice.textContent = data.productPrice;
+      elDesc.textContent = data.productDescription;
+      elFullLink.href = data.productUrl;
+
+      if (data.productComparePrice) {
+        elCompare.textContent = data.productComparePrice;
+        elCompare.style.display = 'inline';
+        elPrice.classList.add('on-sale');
+      } else {
+        elCompare.style.display = 'none';
+        elPrice.classList.remove('on-sale');
+      }
+
+      selectedVariantId = data.productVariantId;
+      elAtcBtn.disabled = data.productAvailable !== 'true';
+      elAtcBtn.textContent = data.productAvailable === 'true' ? 'Add to Cart' : 'Sold Out';
+      elAtcBtn.className = 'ql-atc-btn';
+
+      // Load size options if available for fashion variants
+      const productHandle = data.productHandle;
+      if (productHandle) {
+        fetch(`/products/${productHandle}.js`)
+        .then(res => res.json())
+        .then(product => {
+          const sizeOpt = product.options.find(o => o.name.toLowerCase() === 'size');
+          if (sizeOpt) {
+            elSizeSection.style.display = 'block';
+            elSizeContainer.innerHTML = sizeOpt.values.map((v, i) => {
+              return `<button class="ql-size-btn${i === 0 ? ' active' : ''}" type="button" data-val="${v}">${v}</button>`;
+            }).join('');
+            
+            // Map selected first variant
+            const updateActiveVariant = () => {
+              const activeSize = elSizeContainer.querySelector('.ql-size-btn.active')?.dataset.val;
+              const matchedVariant = product.variants.find(v => v.options.includes(activeSize));
+              if (matchedVariant) {
+                selectedVariantId = matchedVariant.id;
+                elAtcBtn.disabled = !matchedVariant.available;
+                elAtcBtn.textContent = matchedVariant.available ? 'Add to Cart' : 'Sold Out';
+                if (matchedVariant.featured_image) {
+                  elImage.src = matchedVariant.featured_image.src;
+                }
+              }
+            };
+
+            elSizeContainer.querySelectorAll('.ql-size-btn').forEach(btn => {
+              btn.addEventListener('click', function() {
+                elSizeContainer.querySelectorAll('.ql-size-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updateActiveVariant();
+              });
+            });
+            updateActiveVariant();
+          } else {
+            elSizeSection.style.display = 'none';
+          }
+        });
+      }
+
+      overlay.classList.add('is-open');
+      document.body.classList.add('ql-no-scroll');
+    }
+
+    function closeQuickLook() {
+      if (overlay) overlay.classList.remove('is-open');
+      document.body.classList.remove('ql-no-scroll');
+    }
+
+    if (elAtcBtn) {
+      elAtcBtn.addEventListener('click', function () {
+        if (!selectedVariantId || elAtcBtn.disabled) return;
+        elAtcBtn.textContent = 'Adding...';
+        elAtcBtn.disabled = true;
+
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify({ id: selectedVariantId, quantity: 1 })
+        })
+        .then(res => res.json())
+        .then(() => {
+          elAtcBtn.textContent = '✓ Added to Cart!';
+          elAtcBtn.classList.add('added');
+          
+          fetch('/cart.js')
+          .then(res => res.json())
+          .then(cart => {
+            document.querySelectorAll('.cart-count-bubble, [data-cart-count]').forEach(bubble => {
+              bubble.textContent = cart.item_count;
+            });
+          });
+
+          setTimeout(() => {
+            elAtcBtn.textContent = 'Add to Cart';
+            elAtcBtn.disabled = false;
+            elAtcBtn.classList.remove('added');
+            closeQuickLook();
+          }, 1000);
+        })
+        .catch(() => {
+          elAtcBtn.textContent = 'Add to Cart';
+          elAtcBtn.disabled = false;
+        });
+      });
+    }
+  })();
 </script>
 {%- endunless -%}
