@@ -447,6 +447,12 @@
       }
     }
 
+    @media (max-width: 749px) {
+      .card--no-mobile-hover .card__hover-actions {
+        display: none !important;
+      }
+    }
+
     body.ql-no-scroll { overflow: hidden; }
   </style>
 {%- endunless -%}
@@ -480,7 +486,7 @@
 
   <div class="card-wrapper product-card-wrapper underline-links-hover">
     <div
-      class="card card--enhanced{% if extend_height %} card--extend-height{% endif %}{% if horizontal_class %} card--horizontal{% endif %}"
+      class="card card--enhanced{% if extend_height %} card--extend-height{% endif %}{% if horizontal_class %} card--horizontal{% endif %}{% if hide_hover_mobile %} card--no-mobile-hover{% endif %}"
       data-product-id="{{ card_product.id }}"
     >
 
