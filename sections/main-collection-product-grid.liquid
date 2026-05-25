@@ -34,142 +34,6 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
-
-  /* Premium Minimalist Sort & Count Layout */
-  .facets-vertical-sort {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(var(--color-foreground), 0.08);
-  }
-  
-  .facets-vertical-form {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-
-  .facet-filters.sorting {
-    padding: 0;
-  }
-
-  .facet-filters__field {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .facet-filters__label {
-    margin: 0;
-    font-size: 12px;
-    letter-spacing: 0.04em;
-    text-transform: none;
-    font-weight: 400; /* Matches Count Font Weight */
-    color: rgba(var(--color-foreground), 0.5);
-  }
-
-  /* Custom Modern Borderless Select Styling */
-  .select {
-    position: relative;
-    display: inline-block;
-  }
-
-  .select select.facet-filters__sort {
-    font-family: var(--font-body-family), inherit; /* Explicitly match theme's native body font family */
-    font-size: 12px; /* Aligned with product count size */
-    font-weight: 400; /* Minimalist weight matching button standards (No Bold) */
-    letter-spacing: 0.04em; /* Aligned with product count letter spacing */
-    text-transform: none; /* Keeps standard readable title-case formatting */
-    padding: 6px 24px 6px 6px; /* Elegant interior padding for breathing room */
-    border: none; /* Completely borderless */
-    background-color: transparent;
-    color: rgb(var(--color-foreground));
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    transition: color 0.2s ease;
-    min-width: auto;
-  }
-
-  .select select.facet-filters__sort:hover,
-  .select select.facet-filters__sort:focus {
-    color: rgba(var(--color-foreground), 0.7);
-    outline: none;
-    box-shadow: none;
-  }
-
-  .select .svg-wrapper {
-    position: absolute;
-    right: 4px; /* Perfectly aligned to the padding limit */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 10px;
-    height: 10px;
-    pointer-events: none;
-    transition: transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
-    color: rgba(var(--color-foreground), 0.5);
-  }
-
-  .select select.facet-filters__sort:focus + .svg-wrapper {
-    transform: translateY(-50%) rotate(180deg);
-    color: rgb(var(--color-foreground));
-  }
-
-  /* Disable hover underlines on filtering accordion titles ("Availability", "Price", etc) */
-  .facets__summary:hover .facets__summary-label,
-  .facets__summary-label:hover,
-  .facets__summary:hover,
-  .facets-layout-grid summary:hover,
-  .facets__disclosure summary:hover,
-  summary:hover .facets__summary-label,
-  summary:hover span {
-    text-decoration: none !important;
-  }
-
-  /* Refined Product Count style */
-  .product-count-vertical {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .product-count__text {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    color: rgba(var(--color-foreground), 0.6);
-  }
-
-  /* Elegant Loading State line overlay */
-  .loading-overlay__spinner-line {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: rgb(var(--color-foreground));
-    animation: pulseWidth 1.5s infinite ease-in-out;
-    display: none;
-  }
-  
-  .collection.loading .loading-overlay__spinner-line {
-    display: block;
-  }
-
-  @keyframes pulseWidth {
-    0% { transform: scaleX(0); transform-origin: left; }
-    50% { transform: scaleX(1); transform-origin: left; }
-    51% { transform: scaleX(1); transform-origin: right; }
-    100% { transform: scaleX(0); transform-origin: right; }
-  }
-
-  /* Optimized Grid adjustments */
-  .product-grid-container {
-    padding-top: 8px;
-    position: relative;
-  }
 {%- endstyle -%}
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
@@ -278,9 +142,7 @@
           <div
             class="collection{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
           >
-            <div class="loading-overlay gradient">
-              <div class="loading-overlay__spinner-line"></div>
-            </div>
+            <div class="loading-overlay gradient"></div>
             <ul
               id="product-grid"
               data-id="{{ section.id }}"
@@ -290,28 +152,12 @@
                 {% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %}
               "
             >
-              {%- liquid
-                assign columns_desktop_int = section.settings.columns_desktop | plus: 0
-                assign columns_mobile_int = section.settings.columns_mobile | plus: 0
-                
-                # Dynamically calculate and target above-the-fold count for preload optimization
-                assign above_the_fold_count = columns_desktop_int
-                if columns_mobile_int > above_the_fold_count
-                  assign above_the_fold_count = columns_mobile_int
-                endif
-              -%}
-              
               {% assign skip_card_product_styles = false %}
               {%- for product in collection.products -%}
-                {%- liquid
-                  assign lazy_load = true
-                  assign fetch_priority = 'auto'
-                  
-                  if forloop.index <= above_the_fold_count
-                    assign lazy_load = false
-                    assign fetch_priority = 'high'
-                  endif
-                -%}
+                {% assign lazy_load = false %}
+                {%- if forloop.index > 2 -%}
+                  {%- assign lazy_load = true -%}
+                {%- endif -%}
                 <li
                   class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                   {% if settings.animations_reveal_on_scroll %}
@@ -327,7 +173,6 @@
                     show_vendor: section.settings.show_vendor,
                     show_rating: section.settings.show_rating,
                     lazy_load: lazy_load,
-                    fetch_priority: fetch_priority,
                     skip_styles: skip_card_product_styles,
                     quick_add: section.settings.quick_add,
                     show_quick_actions: section.settings.show_quick_actions,
