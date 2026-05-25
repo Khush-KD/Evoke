@@ -1,6 +1,5 @@
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
-
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 
@@ -37,17 +36,25 @@
     }
   }
 
-  /* View-all button positioning helpers */
+  /* Slider and Premium Headers */
   .collection__title--has-view-all-top {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
+    margin-bottom: 25px;
   }
-  .collection__title--has-view-all-top .collection__title-text {
+  .collection__title-text {
     flex: 1 1 auto;
-    min-width: 0;
+    min-width: 250px;
+  }
+  .collection__title-text.align-center {
+    text-align: center;
+    margin: 0 auto;
+  }
+  .collection__title-text.align-right {
+    text-align: right;
   }
   .collection__view-all--top-right {
     flex-shrink: 0;
@@ -55,6 +62,38 @@
   .collection__view-all--bottom-right {
     display: flex;
     justify-content: flex-end;
+    margin-top: 25px;
+  }
+  .collection__subtitle {
+    margin-top: 8px;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.7);
+  }
+  .featured-collection-progressbar {
+    height: 3px;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.08);
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 20px;
+    display: none;
+  }
+  .featured-collection-progressbar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background-color: currentColor;
+    transition: width 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  @media screen and (max-width: 749px) {
+    .featured-collection-progressbar {
+      display: block;
+    }
   }
 {%- endstyle -%}
 
@@ -86,34 +125,29 @@
   assign view_all_position = section.settings.view_all_position | default: 'bottom_center'
 -%}
 
-<div
-  class="color-{{ section.settings.color_scheme }} isolate gradient"
->
+<div class="color-{{ section.settings.color_scheme }} isolate gradient">
   <div
     class="collection{% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %} section-{{ section.id }}-padding{% if section.settings.full_width %} collection--full-width{% endif %}"
     id="collection-{{ section.id }}"
     data-id="{{ section.id }}"
   >
-
-    {%- comment -%} ── Title row (optionally contains View All at top-right) ── {%- endcomment -%}
+    {%- comment -%} Title row (optionally contains View All at top-right) {%- endcomment -%}
     <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width{% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}{% if section.settings.show_view_all and more_in_collection and view_all_position == 'top_right' %} collection__title--has-view-all-top{% endif %}">
-
-      {%- comment -%} Wrap title + description so they flex-grow together {%- endcomment -%}
-      <div class="collection__title-text">
+      <div class="collection__title-text align-{{ section.settings.heading_alignment }}">
+        {%- if section.settings.subtitle != blank -%}
+          <span class="collection__subtitle block">{{ section.settings.subtitle | escape }}</span>
+        {%- endif -%}
         {%- if section.settings.title != blank -%}
           <h2 class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
             {{ section.settings.title }}
           </h2>
         {%- endif -%}
-        {%- if section.settings.description != blank
-          or section.settings.show_description
-          and section.settings.collection.description != empty
-        -%}
+        {%- if section.settings.description != blank or section.settings.show_description and section.settings.collection.description != empty -%}
           <div class="collection__description {{ section.settings.description_style }} rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
             {%- if section.settings.show_description -%}
               {{ section.settings.collection.description }}
             {%- else -%}
-              {{ section.settings.description -}}
+              {{ section.settings.description }}
             {%- endif %}
           </div>
         {%- endif -%}
@@ -130,7 +164,6 @@
           </a>
         </div>
       {%- endif -%}
-
     </div>
 
     <slider-component class="slider-mobile-gutter{% if section.settings.full_width %} slider-component-full-width{% endif %}{% if show_mobile_slider == false %} page-width{% endif %}{% if show_desktop_slider == false and section.settings.full_width == false %} page-width-desktop{% endif %}{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
@@ -207,6 +240,7 @@
           {%- endfor -%}
         {%- endif -%}
       </ul>
+
       {%- if show_mobile_slider or show_desktop_slider -%}
         <div class="slider-buttons">
           <button
@@ -238,6 +272,9 @@
             </span>
           </button>
         </div>
+        <div class="featured-collection-progressbar color-{{ section.settings.color_scheme }}">
+          <div class="featured-collection-progressbar-fill"></div>
+        </div>
       {%- endif -%}
     </slider-component>
 
@@ -263,7 +300,6 @@
           </a>
         </div>
       {%- endif -%}
-      {%- comment -%} top_right is rendered inside the title row above {%- endcomment -%}
     {%- endif -%}
 
     {% if section.settings.image_shape == 'arch' %}
@@ -271,6 +307,25 @@
     {%- endif -%}
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const slider = document.getElementById('Slider-{{ section.id }}');
+    const progressBarFill = document.querySelector('#collection-{{ section.id }} .featured-collection-progressbar-fill');
+    if (slider && progressBarFill) {
+      const updateProgressBar = () => {
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        if (maxScroll > 0) {
+          const scrollPct = (slider.scrollLeft / maxScroll) * 100;
+          progressBarFill.style.width = `${Math.min(scrollPct, 100)}%`;
+        }
+      };
+      slider.addEventListener('scroll', updateProgressBar, { passive: true });
+      window.addEventListener('resize', updateProgressBar, { passive: true });
+      updateProgressBar();
+    }
+  });
+</script>
 
 {% schema %}
 {
@@ -300,9 +355,15 @@
       "content": "t:sections.featured-collection.settings.header_text.content"
     },
     {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Section Subtitle",
+      "default": "New Arrivals"
+    },
+    {
       "type": "inline_richtext",
       "id": "title",
-      "default": "t:sections.featured-collection.settings.title.default",
+      "default": "Featured Collection",
       "label": "t:sections.featured-collection.settings.title.label"
     },
     {
@@ -332,6 +393,17 @@
       ],
       "default": "h1",
       "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left",
+      "label": "Heading Alignment"
     },
     {
       "type": "richtext",
@@ -581,13 +653,13 @@
     {
       "type": "checkbox",
       "id": "hide_hover_actions_mobile",
-      "default": false,
+      "default": true,
       "label": "Hide hover buttons on mobile"
     },
     {
       "type": "checkbox",
       "id": "swipe_on_mobile",
-      "default": false,
+      "default": true,
       "label": "t:sections.featured-collection.settings.swipe_on_mobile.label"
     },
     {
