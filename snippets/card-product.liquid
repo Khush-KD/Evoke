@@ -105,17 +105,6 @@
     }
     .card__hover-btn svg { flex-shrink: 0; }
 
-    /* ── Clickable image overlay ────────────────────────────────── */
-    /* Covers the full media area at z-index 1 so the image is
-       clickable for Quick Look, while badges (z:2) and the hover
-       action bar (z:3) stay on top and receive their own clicks. */
-    .card__image-link {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      cursor: pointer;
-    }
-
     /* ── Badges ─────────────────────────────────────────────────── */
     .card__badge-stack {
       position: absolute;
@@ -275,7 +264,6 @@
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
-      transition: opacity .2s ease;
     }
 
     .ql-details {
@@ -441,31 +429,13 @@
     endif
 
     assign color_option = nil
-    assign color_option_position = 0
     for option in card_product.options_with_values
       assign option_lc = option.name | downcase
       if option_lc == 'color' or option_lc == 'colour'
         assign color_option = option
-        assign color_option_position = forloop.index
         break
       endif
     endfor
-
-    assign variant_image_map = ''
-    if color_option
-      for color_val in color_option.values
-        assign color_val_lc = color_val | downcase
-        for variant in card_product.variants
-          assign v_opt_idx = color_option_position | minus: 1
-          assign v_opt = variant.options[v_opt_idx] | downcase
-          if v_opt == color_val_lc and variant.featured_image
-            assign v_img = variant.featured_image | image_url: width: 800
-            assign variant_image_map = variant_image_map | append: color_val | append: '::' | append: v_img | append: '||'
-            break
-          endif
-        endfor
-      endfor
-    endif
   -%}
 
   <div class="card-wrapper product-card-wrapper underline-links-hover">
@@ -479,30 +449,6 @@
         class="card__media-wrapper"
         style="padding-top: {{ 1 | divided_by: ratio | times: 100 }}%; position: relative;"
       >
-
-        <!-- Transparent overlay: click anywhere on the image to open Quick Look.
-             Falls back to product URL if JS is unavailable. z-index:1 sits below
-             the badges (z:2) and hover action bar (z:3) so those still receive clicks. -->
-        <a
-          class="card__image-link"
-          href="{{ card_product.url }}"
-          data-ql-trigger
-          data-product-title="{{ card_product.title | escape }}"
-          data-product-url="{{ card_product.url }}"
-          data-product-vendor="{{ card_product.vendor | escape }}"
-          data-product-description="{{ card_product.description | strip_html | truncatewords: 60 | escape }}"
-          data-product-price="{{ card_product.price | money }}"
-          data-product-compare-price="{% if is_on_sale %}{{ card_product.compare_at_price | money }}{% endif %}"
-          data-product-available="{{ card_product.available }}"
-          data-product-image="{{ card_product.featured_media | image_url: width: 800 }}"
-          data-product-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
-          data-product-on-sale="{{ is_on_sale }}"
-          data-product-colors="{%- if color_option -%}{{ color_option.values | join: '|' }}{%- endif -%}"
-          data-product-variant-images="{{ variant_image_map | escape }}"
-          aria-label="Quick look at {{ card_product.title | escape }}"
-          tabindex="-1"
-          aria-hidden="true"
-        ></a>
 
         <!-- Badges -->
         <div class="card__badge-stack">
@@ -579,7 +525,6 @@
             data-product-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
             data-product-on-sale="{{ is_on_sale }}"
             data-product-colors="{%- if color_option -%}{{ color_option.values | join: '|' }}{%- endif -%}"
-            data-product-variant-images="{{ variant_image_map | escape }}"
             aria-label="Quick look at {{ card_product.title | escape }}"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -858,18 +803,6 @@
       elCompare.style.display = 'none';
     }
 
-    // ── Parse color → image map ──────────────────────────────────
-    // Format: "ColorName::imageURL||ColorName2::imageURL2||"
-    var variantImages = {};
-    if (d.productVariantImages) {
-      d.productVariantImages.split('||').filter(Boolean).forEach(function(pair) {
-        var sep = pair.indexOf('::');
-        if (sep > -1) {
-          variantImages[pair.slice(0, sep).toLowerCase()] = pair.slice(sep + 2);
-        }
-      });
-    }
-
     var colors = d.productColors ? d.productColors.split('|').filter(Boolean) : [];
     if (colors.length) {
       elColSec.style.display = '';
@@ -881,17 +814,6 @@
         sw.addEventListener('click', function() {
           elSwatches.querySelectorAll('.ql-swatch').forEach(function(s){ s.classList.remove('active'); });
           sw.classList.add('active');
-
-          // ── Swap modal image for this color ──────────────────
-          var colorKey = (sw.getAttribute('title') || '').toLowerCase();
-          var imgUrl   = variantImages[colorKey];
-          if (imgUrl) {
-            elImage.style.opacity = '0';
-            setTimeout(function() {
-              elImage.src = imgUrl;
-              elImage.style.opacity = '1';
-            }, 180);
-          }
         });
       });
     } else {
