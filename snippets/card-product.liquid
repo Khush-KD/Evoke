@@ -67,6 +67,7 @@
       transform: translateY(100%);
       transition: transform .3s cubic-bezier(.34,1.2,.64,1);
       z-index: 3;
+      pointer-events: auto;
     }
     .card--enhanced:hover .card__hover-actions { transform: translateY(0); }
 
@@ -460,7 +461,7 @@
         </div>
 
         {%- if card_product.featured_media -%}
-          <div class="card__media" style="position:absolute;inset:0;">
+          <a href="{{ card_product.url }}" class="card__media" style="position:absolute;inset:0;" aria-label="{{ card_product.title | escape }}" tabindex="-1">
             <div class="media media--transparent media--hover-effect" style="height:100%;">
               {% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
               <img
@@ -503,7 +504,7 @@
                 >
               {%- endif -%}
             </div>
-          </div>
+          </a>
         {%- endif -%}
 
         <!-- Hover Action Bar -->
