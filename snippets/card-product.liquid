@@ -35,7 +35,8 @@
       background: #fff;
       box-shadow: 0 1px 4px rgba(0,0,0,.06);
       transition: box-shadow .28s ease, transform .28s ease;
-      will-change: transform;
+      /* NOTE: will-change intentionally omitted — it creates a stacking
+         context that would trap position:fixed children (the QL modal). */
     }
     .card--enhanced:hover {
       box-shadow: 0 8px 28px rgba(0,0,0,.13);
@@ -199,7 +200,13 @@
 
     /* ════════════════════════════════════════════════════════════
        QUICK LOOK MODAL
+       The overlay is moved to <body> via JS so it is NEVER inside
+       a CSS-transformed ancestor (which would break position:fixed).
     ══════════════════════════════════════════════════════════════ */
+
+    /* Default: hidden. Do NOT use the HTML `hidden` attribute — many
+       browsers apply [hidden]{display:none!important} which overrides
+       the .is-open rule below and permanently traps the modal. */
     .ql-overlay {
       display: none;
       position: fixed;
@@ -211,6 +218,7 @@
       justify-content: center;
       padding: 20px;
     }
+    /* Only the class toggle controls visibility */
     .ql-overlay.is-open { display: flex; }
 
     .ql-modal {
@@ -638,15 +646,22 @@
 
 <!-- ════════════════════════════════════════════════════════════════
      QUICK LOOK MODAL — rendered once (first card only, skip_styles=false)
+     IMPORTANT: The JS below immediately moves this node to <body> so it
+     is never a descendant of any CSS-transformed element. A transform on
+     an ancestor re-parents position:fixed, causing the modal to be sized
+     and positioned relative to the card instead of the viewport.
 ══════════════════════════════════════════════════════════════════ -->
 {%- unless skip_styles -%}
+<!-- NOTE: No `hidden` attribute here. The HTML hidden attribute is
+     implemented as [hidden]{display:none!important} in some browsers,
+     which permanently overrides .is-open{display:flex}. Visibility is
+     controlled exclusively via the .is-open CSS class. -->
 <div
   class="ql-overlay"
   id="quickLookOverlay"
   role="dialog"
   aria-modal="true"
   aria-label="Quick look"
-  hidden
 >
   <div class="ql-modal" id="quickLookModal">
 
@@ -732,6 +747,21 @@
   var elAtcBtn  = document.getElementById('quickLookAtcBtn');
   var elFullLink= document.getElementById('quickLookFullLink');
 
+  // ── FIX 1: Move overlay to <body> ───────────────────────────────
+  // CSS `transform` on any ancestor re-parents `position:fixed` elements,
+  // causing the overlay to be sized/clipped to the transformed element
+  // (in this case the hovered product card) instead of the viewport.
+  // Moving it to <body> guarantees it is never inside a transformed ancestor.
+  if (overlay.parentNode !== document.body) {
+    document.body.appendChild(overlay);
+  }
+
+  // ── FIX 2: Class-only visibility ────────────────────────────────
+  // We deliberately do NOT use the `hidden` HTML attribute. Many browsers
+  // implement [hidden]{display:none!important} which overrides
+  // .is-open{display:flex}, permanently preventing the modal from showing.
+  // The .is-open class is the single source of truth for visibility.
+
   function openModal(btn) {
     var d = btn.dataset;
 
@@ -773,6 +803,7 @@
     elAtcBtn.dataset.variantId = d.productVariantId || '';
     elAtcBtn.disabled = !available;
     elAtcBtn.classList.toggle('disabled', !available);
+    elAtcBtn.style.background = '';
     if (!available) {
       elAtcBtn.textContent = 'Sold Out';
     } else {
@@ -781,7 +812,7 @@
 
     elFullLink.href = d.productUrl || '#';
 
-    overlay.hidden = false;
+    // Show via class only — no hidden attribute manipulation
     overlay.classList.add('is-open');
     document.body.classList.add('ql-no-scroll');
     closeBtn.focus();
@@ -789,7 +820,6 @@
 
   function closeModal() {
     overlay.classList.remove('is-open');
-    overlay.hidden = true;
     document.body.classList.remove('ql-no-scroll');
   }
 
@@ -797,6 +827,7 @@
     var qlBtn = e.target.closest('[data-ql-trigger]');
     if (qlBtn) { e.preventDefault(); openModal(qlBtn); return; }
 
+    // Close when clicking the backdrop (the overlay itself, not the modal)
     if (e.target === overlay) { closeModal(); return; }
 
     var atcBtn = e.target.closest('.js-quick-atc');
@@ -806,48 +837,61 @@
   closeBtn.addEventListener('click', closeModal);
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
   });
 
   elAtcBtn.addEventListener('click', function() {
-    if (elAtcBtn.dataset.variantId) quickATC(elAtcBtn.dataset.variantId, elAtcBtn, true);
+    if (!elAtcBtn.disabled && elAtcBtn.dataset.variantId) {
+      quickATC(elAtcBtn.dataset.variantId, elAtcBtn, true);
+    }
   });
 
   function quickATC(variantId, el, isModal) {
-    if (!variantId) return;
-    var orig = el.innerHTML;
-    el.disabled = true;
+    if (!variantId || el.disabled) return;
+
+    var origHTML = el.innerHTML;
+    var origBg   = el.style.background;
+    el.disabled  = true;
     el.innerHTML = isModal ? 'Adding&hellip;' : '&hellip;';
 
     fetch('/cart/add.js', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
       body: JSON.stringify({ id: variantId, quantity: 1 })
     })
-    .then(function(r){ return r.json(); })
+    .then(function(r) {
+      if (!r.ok) throw new Error('Cart add failed: ' + r.status);
+      return r.json();
+    })
     .then(function() {
-      el.innerHTML = isModal ? '&#10003; Added!' : '&#10003; Added';
+      el.innerHTML = isModal ? '&#10003; Added!' : '&#10003;';
       el.style.background = '#2d6a4f';
 
+      // Update cart count badges
       fetch('/cart.js')
         .then(function(r){ return r.json(); })
         .then(function(cart) {
-          document.querySelectorAll('[data-cart-count], .cart-count-bubble').forEach(function(el) {
-            el.textContent = cart.item_count;
+          document.querySelectorAll('[data-cart-count], .cart-count-bubble').forEach(function(node) {
+            node.textContent = cart.item_count;
           });
           document.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
         });
 
       setTimeout(function() {
-        el.disabled = false;
-        el.innerHTML = orig;
-        el.style.background = '';
+        el.disabled      = false;
+        el.innerHTML     = origHTML;
+        el.style.background = origBg;
         if (isModal) closeModal();
       }, 1600);
     })
-    .catch(function() {
-      el.disabled = false;
-      el.innerHTML = orig;
+    .catch(function(err) {
+      console.error('[QuickATC]', err);
+      el.disabled      = false;
+      el.innerHTML     = origHTML;
+      el.style.background = origBg;
     });
   }
 })();
