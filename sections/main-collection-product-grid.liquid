@@ -77,11 +77,11 @@
   .select select.facet-filters__sort {
     font-family: inherit;
     font-size: 11px;
-    font-weight: 500; /* Minimalist weight matching button standards */
+    font-weight: 500; /* Minimalist weight matching button standards (No Bold) */
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    padding: 8px 24px 8px 0px; /* Completely removed left container padding */
-    border: none; /* Removed Box Border Container */
+    padding: 6px 24px 6px 10px; /* Subtle interior padding for breathing room */
+    border: none; /* Completely borderless */
     background-color: transparent;
     color: rgb(var(--color-foreground));
     cursor: pointer;
@@ -101,7 +101,7 @@
 
   .select .svg-wrapper {
     position: absolute;
-    right: 4px; /* Perfectly aligned to borderless text boundary */
+    right: 8px; /* Balanced inline layout aligned to the padding limit */
     top: 50%;
     transform: translateY(-50%);
     width: 10px;
@@ -118,9 +118,12 @@
 
   /* Disable hover underlines on filtering accordion titles ("Availability", "Price", etc) */
   .facets__summary:hover .facets__summary-label,
+  .facets__summary-label:hover,
   .facets__summary:hover,
   .facets-layout-grid summary:hover,
-  .facets__disclosure summary:hover {
+  .facets__disclosure summary:hover,
+  summary:hover .facets__summary-label,
+  summary:hover span {
     text-decoration: none !important;
   }
 
