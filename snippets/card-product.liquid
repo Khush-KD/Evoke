@@ -551,74 +551,72 @@
           </a>
         {%- endif -%}
 
-      {%- unless show_hover_actions == false -%}
-          <!-- Hover Action Bar -->
-          <div class="card__hover-actions">
+        <!-- Hover Action Bar -->
+        <div class="card__hover-actions">
 
-            {%- unless show_quick_actions == false -%}
-              <!-- Quick Look button -->
-              <button
-                class="card__hover-btn card__hover-btn--quicklook"
-                type="button"
-                data-ql-trigger
-                data-product-title="{{ card_product.title | escape }}"
-                data-product-url="{{ card_product.url }}"
-                data-product-handle="{{ card_product.handle }}"
-                data-product-vendor="{{ card_product.vendor | escape }}"
-                data-product-description="{{ card_product.description | strip_html | truncatewords: 60 | escape }}"
-                data-product-price="{{ card_product.price | money }}"
-                data-product-compare-price="{% if is_on_sale %}{{ card_product.compare_at_price | money }}{% endif %}"
-                data-product-available="{{ card_product.available }}"
-                data-product-image="{{ card_product.featured_media | image_url: width: 800 }}"
-                data-product-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
-                data-product-on-sale="{{ is_on_sale }}"
-                data-product-colors="{%- if color_option -%}{{ color_option.values | join: '|' }}{%- endif -%}"
-                aria-label="Quick look at {{ card_product.title | escape }}"
+          {%- unless show_quick_actions == false -%}
+            <!-- Quick Look button -->
+            <button
+              class="card__hover-btn card__hover-btn--quicklook"
+              type="button"
+              data-ql-trigger
+              data-product-title="{{ card_product.title | escape }}"
+              data-product-url="{{ card_product.url }}"
+              data-product-handle="{{ card_product.handle }}"
+              data-product-vendor="{{ card_product.vendor | escape }}"
+              data-product-description="{{ card_product.description | strip_html | truncatewords: 60 | escape }}"
+              data-product-price="{{ card_product.price | money }}"
+              data-product-compare-price="{% if is_on_sale %}{{ card_product.compare_at_price | money }}{% endif %}"
+              data-product-available="{{ card_product.available }}"
+              data-product-image="{{ card_product.featured_media | image_url: width: 800 }}"
+              data-product-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
+              data-product-on-sale="{{ is_on_sale }}"
+              data-product-colors="{%- if color_option -%}{{ color_option.values | join: '|' }}{%- endif -%}"
+              aria-label="Quick look at {{ card_product.title | escape }}"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              Quick Look
+            </button>
+          {%- endunless -%}
+
+          {%- unless show_otherhover_actions == false -%}
+            <!-- Add to Cart / Options / Sold Out -->
+            {%- if card_product.variants_count > 1 -%}
+              <a
+                href="{{ card_product.url }}"
+                class="card__hover-btn card__hover-btn--atc"
+                aria-label="Choose options for {{ card_product.title | escape }}"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                  <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
                 </svg>
-                Quick Look
+                Options
+              </a>
+            {%- elsif card_product.available -%}
+              <button
+                class="card__hover-btn card__hover-btn--atc js-quick-atc"
+                type="button"
+                data-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
+                aria-label="Add {{ card_product.title | escape }} to cart"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                </svg>
+                Add to Cart
               </button>
-            {%- endunless -%}
-
-            {%- unless show_otherhover_actions == false -%}
-              <!-- Add to Cart / Options / Sold Out -->
-              {%- if card_product.variants_count > 1 -%}
-                <a
-                  href="{{ card_product.url }}"
-                  class="card__hover-btn card__hover-btn--atc"
-                  aria-label="Choose options for {{ card_product.title | escape }}"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
-                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                  </svg>
-                  Options
-                </a>
-              {%- elsif card_product.available -%}
-                <button
-                  class="card__hover-btn card__hover-btn--atc js-quick-atc"
-                  type="button"
-                  data-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
-                  aria-label="Add {{ card_product.title | escape }} to cart"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
-                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                  </svg>
-                  Add to Cart
-                </button>
-              {%- else -%}
-                <button class="card__hover-btn card__hover-btn--atc sold-out" type="button" disabled>
-                  Sold Out
-                </button>
-              {%- endif -%}
-            {%- endunless -%}
-            
-          </div>
-        </div><!-- /.card__media-wrapper -->
-      {%- endunless -%}
+            {%- else -%}
+              <button class="card__hover-btn card__hover-btn--atc sold-out" type="button" disabled>
+                Sold Out
+              </button>
+            {%- endif -%}
+          {%- endunless -%}
+          
+        </div>
+      </div><!-- /.card__media-wrapper -->
 
       <!-- Card Info -->
       <div class="card__info">
