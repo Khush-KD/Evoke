@@ -149,6 +149,153 @@
     position: relative;
   }
 
+  /* ── Custom Premium Collections Filter Sidebar Block ── */
+  .custom-collections-sidebar-filter {
+    border-bottom: 1px solid rgba(var(--color-foreground), 0.08);
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .custom-collections-sidebar-filter .facets__summary {
+    padding: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .custom-collections-sidebar-filter .facets__summary > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .custom-collections-sidebar-filter .facets__summary-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .custom-collections-sidebar-filter .svg-wrapper {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.25s ease;
+  }
+
+  .custom-collections-sidebar-filter details[open] .svg-wrapper {
+    transform: rotate(180deg);
+  }
+
+  .custom-collections-sidebar-filter .facets__list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .custom-collections-sidebar-filter .collection-filter-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    font-size: 13px;
+    color: rgba(var(--color-foreground), 0.75);
+    transition: all 0.25s ease;
+    padding: 2px 0;
+  }
+
+  .custom-collections-sidebar-filter .collection-filter-item:hover {
+    color: rgb(var(--color-foreground));
+    padding-left: 4px;
+  }
+
+  .custom-collections-sidebar-filter .collection-filter-item--active {
+    color: rgb(var(--color-foreground));
+    font-weight: 700;
+  }
+
+  .custom-collections-sidebar-filter .active-dot {
+    width: 5px;
+    height: 5px;
+    background-color: rgb(var(--color-foreground));
+    border-radius: 50%;
+  }
+
+  /* ── Custom Premium Horizontal Collections Tab Bar ── */
+  .custom-collections-horizontal-bar {
+    width: 100%;
+    margin-bottom: 3.5rem;
+    border-bottom: 1px solid rgba(var(--color-foreground), 0.08);
+  }
+
+  .custom-collections-horizontal-bar__title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.45);
+    margin-bottom: 1.6rem;
+  }
+
+  .custom-collections-horizontal-bar__list {
+    display: flex;
+    gap: 28px;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    padding: 0 0 12px 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .custom-collections-horizontal-bar__list::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  .custom-collections-horizontal-bar__item {
+    flex-shrink: 0;
+  }
+
+  .custom-collections-horizontal-bar__link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.6);
+    text-decoration: none;
+    padding-bottom: 12px;
+    position: relative;
+    transition: color 0.25s ease;
+  }
+
+  .custom-collections-horizontal-bar__link:hover {
+    color: rgb(var(--color-foreground));
+  }
+
+  .custom-collections-horizontal-bar__link--active {
+    color: rgb(var(--color-foreground));
+    font-weight: 700;
+  }
+
+  .custom-collections-horizontal-bar__link::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background-color: rgb(var(--color-foreground));
+    transform: scaleX(0);
+    transition: transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  .custom-collections-horizontal-bar__link--active::after {
+    transform: scaleX(1);
+  }
+
   /* ── Modern Premium Bold Pagination ─────────────────── */
   .pagination-wrapper {
     margin-top: 6rem;
@@ -339,13 +486,58 @@
     <div class="{% if section.settings.filter_type == 'vertical' %} facets-vertical page-width{% endif %}">
       {{ 'component-facets.css' | asset_url | stylesheet_tag }}
       <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
-      {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
+      
+      {%- if section.settings.enable_filtering or section.settings.enable_sorting or section.settings.enable_collections_filter -%}
         <aside
           aria-labelledby="verticalTitle"
           class="facets-wrapper{% unless section.settings.enable_filtering %} facets-wrapper--no-filters{% endunless %}{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
           id="main-collection-filters"
           data-id="{{ section.id }}"
         >
+          {%- liquid
+            assign show_sidebar_collections = false
+            if section.settings.enable_collections_filter and section.settings.filter_collections != blank
+              if section.settings.collections_filter_style == 'sidebar' or section.settings.collections_filter_style == 'both'
+                assign show_sidebar_collections = true
+              elsif section.settings.collections_filter_style == 'auto' and section.settings.filter_type == 'vertical'
+                assign show_sidebar_collections = true
+              endif
+            endif
+          -%}
+
+          {%- if show_sidebar_collections -%}
+            <!-- Premium Sidebar Collection Filter Block -->
+            <div class="custom-collections-sidebar-filter facets__disclosure">
+              <details id="Details-Collections-Sidebar" class="disclosure-has-popup facets__disclosure-details" open>
+                <summary class="facets__summary caption-large focus-inset">
+                  <div>
+                    <span class="facets__summary-label color-foreground">{{ section.settings.collections_filter_title | escape }}</span>
+                    <span class="svg-wrapper">
+                      {{- 'icon-caret.svg' | inline_asset_content -}}
+                    </span>
+                  </div>
+                </summary>
+                <div id="Facet-Collections-Sidebar-Display" class="facets__display">
+                  <ul class="facets__list list-unstyled" role="list">
+                    {%- for filtered_col in section.settings.filter_collections -%}
+                      <li>
+                        <a 
+                          href="{{ filtered_col.url }}" 
+                          class="collection-filter-item{% if collection.handle == filtered_col.handle %} collection-filter-item--active{% endif %}"
+                        >
+                          <span>{{ filtered_col.title | escape }}</span>
+                          {%- if collection.handle == filtered_col.handle -%}
+                            <span class="active-dot"></span>
+                          {%- endif -%}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </details>
+            </div>
+          {%- endif -%}
+
           {% render 'facets',
             results: collection,
             enable_filtering: section.settings.enable_filtering,
@@ -363,6 +555,38 @@
           data-cascade
         {% endif %}
       >
+        {%- liquid
+          assign show_horizontal_collections = false
+          if section.settings.enable_collections_filter and section.settings.filter_collections != blank
+            if section.settings.collections_filter_style == 'horizontal' or section.settings.collections_filter_style == 'both'
+              assign show_horizontal_collections = true
+            elsif section.settings.collections_filter_style == 'auto' and section.settings.filter_type != 'vertical'
+              assign show_horizontal_collections = true
+            endif
+          endif
+        -%}
+
+        {%- if show_horizontal_collections -%}
+          <!-- Premium Horizontal Ribbon Collections Filter Bar -->
+          <div class="custom-collections-horizontal-bar page-width">
+            {%- if section.settings.collections_filter_title != blank -%}
+              <h3 class="custom-collections-horizontal-bar__title">{{ section.settings.collections_filter_title | escape }}</h3>
+            {%- endif -%}
+            <ul class="custom-collections-horizontal-bar__list" role="list">
+              {%- for filtered_col in section.settings.filter_collections -%}
+                <li class="custom-collections-horizontal-bar__item">
+                  <a 
+                    href="{{ filtered_col.url }}" 
+                    class="custom-collections-horizontal-bar__link{% if collection.handle == filtered_col.handle %} custom-collections-horizontal-bar__link--active{% endif %}"
+                  >
+                    {{ filtered_col.title | escape }}
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
         {%- if collection.products.size == 0 -%}
           <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
             <div class="loading-overlay gradient"></div>
@@ -620,6 +844,52 @@
       "id": "hide_hover_actions_mobile",
       "default": false,
       "label": "Hide hover buttons on mobile"
+    },
+    {
+      "type": "header",
+      "content": "Collections Quick Filtering"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_collections_filter",
+      "default": true,
+      "label": "Enable Collections Filter",
+      "info": "Display alternative collections to help customers navigate across categories"
+    },
+    {
+      "type": "collection_list",
+      "id": "filter_collections",
+      "label": "Collections to Display"
+    },
+    {
+      "type": "text",
+      "id": "collections_filter_title",
+      "default": "Shop By Collection",
+      "label": "Collections Title"
+    },
+    {
+      "type": "select",
+      "id": "collections_filter_style",
+      "label": "Filter Display Style",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto (Horizontal on top / Accordion in sidebar)"
+        },
+        {
+          "value": "sidebar",
+          "label": "Sidebar Accordion Only (Requires Vertical Filters)"
+        },
+        {
+          "value": "horizontal",
+          "label": "Horizontal Row Only"
+        },
+        {
+          "value": "both",
+          "label": "Both Sidebar and Horizontal"
+        }
+      ]
     },
     {
       "type": "header",
