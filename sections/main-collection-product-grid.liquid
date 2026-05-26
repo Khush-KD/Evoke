@@ -148,6 +148,118 @@
     padding-top: 8px;
     position: relative;
   }
+
+  /* ── Luxury Minimalist Pagination Overrides ─────────────────── */
+  .pagination-wrapper {
+    margin-top: 6rem;
+    margin-bottom: 4rem;
+    padding-top: 4rem;
+    border-top: 1px solid rgba(var(--color-foreground), 0.08);
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .pagination {
+    max-width: 100%;
+    margin: 0 auto !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .pagination__list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .pagination__list li {
+    margin: 0;
+    padding: 0;
+  }
+
+  .pagination__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.45) !important;
+    text-decoration: none !important;
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    cursor: pointer;
+  }
+
+  /* Fix for links inside item if they have distinct formatting */
+  a.pagination__item:hover,
+  .pagination__item:hover {
+    color: rgb(var(--color-foreground)) !important;
+    background-color: rgba(var(--color-foreground), 0.05) !important;
+    border-color: rgba(var(--color-foreground), 0.08) !important;
+    transform: translateY(-1px);
+  }
+
+  /* Current Active Page Styling */
+  .pagination__item--current,
+  .pagination__item[aria-current="page"],
+  .pagination__item.pagination__item--current {
+    color: rgb(var(--color-background)) !important;
+    background-color: rgb(var(--color-foreground)) !important;
+    font-weight: 600;
+    border-color: rgb(var(--color-foreground)) !important;
+    box-shadow: 0 4px 10px rgba(var(--color-foreground), 0.12);
+  }
+
+  /* Prev/Next Navigation buttons */
+  .pagination__item--next,
+  .pagination__item--prev {
+    color: rgba(var(--color-foreground), 0.6) !important;
+    transition: transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1), background-color 0.25s ease;
+  }
+
+  .pagination__item--prev:hover {
+    transform: translateX(-4px) !important;
+  }
+
+  .pagination__item--next:hover {
+    transform: translateX(4px) !important;
+  }
+
+  /* Refine Caret sizing and colors */
+  .pagination__item svg,
+  .pagination__item .icon-caret {
+    width: 10px;
+    height: 10px;
+    fill: currentColor;
+    display: inline-block;
+    vertical-align: middle;
+    transition: transform 0.25s ease;
+  }
+
+  /* Remove Dawn's default text decor styles */
+  .pagination__item.link {
+    text-underline-offset: unset !important;
+    text-decoration: none !important;
+  }
+  
+  .pagination__item.link::after {
+    display: none !important;
+  }
 {%- endstyle -%}
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
