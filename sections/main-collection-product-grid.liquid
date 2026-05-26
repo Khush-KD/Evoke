@@ -149,6 +149,55 @@
     position: relative;
   }
 
+  /* Smooth Fade Transition for Multi-collection Grid Updates */
+  .multi-filter-loading #product-grid {
+    opacity: 0.25;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* Luxury Custom Collection Checkbox Styling */
+  .custom-collection-filters {
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(var(--color-foreground), 0.08);
+    padding-bottom: 15px;
+  }
+  .custom-collection-filters .facets__summary {
+    padding: 10px 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .custom-collection-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .custom-checkbox-ui {
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(var(--color-foreground), 0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background-color: transparent;
+  }
+  .custom-collection-checkbox:checked + .custom-checkbox-ui {
+    background-color: rgb(var(--color-foreground));
+    border-color: rgb(var(--color-foreground)) !important;
+  }
+  .custom-collection-checkbox:checked + .custom-checkbox-ui .icon-checkmark {
+    visibility: visible !important;
+    color: rgb(var(--color-background));
+  }
+  .facet-checkbox:hover .custom-checkbox-ui {
+    border-color: rgba(var(--color-foreground), 0.6);
+  }
+
   /* ── Modern Premium Bold Pagination ─────────────────── */
   .pagination-wrapper {
     margin-top: 6rem;
@@ -182,7 +231,6 @@
     padding: 0;
   }
 
-  /* Target all pagination states to explicitly clear theme underlines and links styling */
   .pagination-wrapper a,
   .pagination-wrapper a:hover,
   .pagination-wrapper a:focus,
@@ -213,7 +261,7 @@
     margin: 0;
     font-family: inherit;
     font-size: 13px;
-    font-weight: 700 !important; /* Elegant Bold Weights */
+    font-weight: 700 !important;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: rgba(var(--color-foreground), 0.55) !important;
@@ -241,13 +289,12 @@
   .pagination__item.pagination__item--current {
     color: rgb(var(--color-background)) !important;
     background-color: rgb(var(--color-foreground)) !important;
-    font-weight: 700 !important; /* Bold current state */
+    font-weight: 700 !important;
     border-color: rgb(var(--color-foreground)) !important;
     box-shadow: 0 4px 12px rgba(var(--color-foreground), 0.15);
     text-decoration: none !important;
   }
 
-  /* Prev/Next Navigation buttons */
   .pagination__item--next,
   .pagination__item--prev {
     color: rgba(var(--color-foreground), 0.7) !important;
@@ -263,7 +310,6 @@
     transform: translateX(4px) !important;
   }
 
-  /* Clean up caret sizing inside container */
   .pagination__item svg,
   .pagination__item .icon-caret {
     width: 10px;
@@ -277,14 +323,13 @@
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
   {%- paginate collection.products by section.settings.products_per_page -%}
-    {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
     {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
       <facet-filters-form class="facets facets-vertical-sort page-width small-hide">
         <form class="facets-vertical-form" id="FacetSortForm">
           <div class="facet-filters sorting caption">
             <div class="facet-filters__field">
               <h2 class="facet-filters__label caption-large text-body">
-                <label for="SortBy">{{ 'products.facets.sort_by_label' | t }}</label>
+                <label for="SortBy">{{ 'products.facets.sort_by_label' | id }}</label>
               </h2>
               <div class="select">
                 {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
@@ -346,6 +391,46 @@
           id="main-collection-filters"
           data-id="{{ section.id }}"
         >
+          {%- if section.settings.filter_collections != blank -%}
+            <!-- Luxury Custom Multi-Collection Filter Accordion -->
+            <div class="custom-collection-filters facet-filters">
+              <details class="disclosure-has-popup facets__disclosure js-filter" data-index="custom-collections" open>
+                <summary class="facets__summary caption-large focus-inset" style="list-style: none;">
+                  <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                    <span class="facets__summary-label" style="font-weight: 500; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(var(--color-foreground), 0.5);">
+                      Shop by Collections
+                    </span>
+                    <span class="svg-wrapper" style="width: 10px; height: 10px; opacity: 0.6;">
+                      <svg viewBox="0 0 10 6" class="icon icon-caret" style="width: 10px; height: 10px; fill: currentColor;">
+                        <path d="M9.707 1.293a1 1 0 00-1.414 0L5 4.586 1.707 1.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 000-1.414z"/>
+                      </svg>
+                    </span>
+                  </div>
+                </summary>
+                <div class="facets__display" style="padding-top: 15px;">
+                  <ul class="facets__list list-unstyled" role="list">
+                    {%- for filter_collection in section.settings.filter_collections -%}
+                      <li class="list-menu__item facets__item" style="margin-bottom: 12px;">
+                        <label class="facet-checkbox" style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; position: relative;">
+                          <input type="checkbox"
+                            value="{{ filter_collection.handle }}"
+                            class="custom-collection-checkbox"
+                          >
+                          <span class="custom-checkbox-ui">
+                            <svg class="icon icon-checkmark" width="10" height="10" viewBox="0 0 11 7" fill="none" xmlns="http://www.w3.org/2000/svg" style="visibility: hidden; stroke: currentColor; stroke-width: 2.5;">
+                              <path d="M1.5 3.5L4.5 6L9.5 1" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                          </span>
+                          <span class="facet-checkbox-label" style="letter-spacing: 0.04em; font-weight: 400; font-size: 12px; text-transform: uppercase;">{{ filter_collection.title }}</span>
+                        </label>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </details>
+            </div>
+          {%- endif -%}
+
           {% render 'facets',
             results: collection,
             enable_filtering: section.settings.enable_filtering,
@@ -454,11 +539,185 @@
   {%- endif -%}
 </div>
 
+<!-- High-Performance Multi-Collection AJAX Handler -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sectionId = '{{ section.id }}';
+  const gridContainer = document.getElementById('ProductGridContainer');
+  const grid = document.getElementById('product-grid');
+  const checkboxes = document.querySelectorAll('.custom-collection-checkbox');
+  const sortBySelect = document.getElementById('SortBy');
+  const productCountDesktop = document.getElementById('ProductCountDesktop');
+  const paginationWrapper = document.querySelector('.pagination-wrapper');
+
+  // Cache state for restoring single collection view
+  let originalGridHTML = grid ? grid.innerHTML : '';
+  let originalCountHTML = productCountDesktop ? productCountDesktop.innerHTML : '';
+  let originalPaginationHTML = paginationWrapper ? paginationWrapper.innerHTML : '';
+
+  if (checkboxes.length === 0) return;
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', handleFilterChange);
+  });
+
+  if (sortBySelect) {
+    sortBySelect.addEventListener('change', function() {
+      const activeHandles = getActiveHandles();
+      if (activeHandles.length > 0) {
+        setTimeout(() => sortMergedProducts(sortBySelect.value), 100);
+      }
+    });
+  }
+
+  function getActiveHandles() {
+    const active = [];
+    checkboxes.forEach(cb => {
+      if (cb.checked) active.push(cb.value);
+    });
+    return active;
+  }
+
+  async function handleFilterChange() {
+    const activeHandles = getActiveHandles();
+
+    if (gridContainer) gridContainer.classList.add('multi-filter-loading');
+
+    if (activeHandles.length === 0) {
+      if (grid) grid.innerHTML = originalGridHTML;
+      if (productCountDesktop) productCountDesktop.innerHTML = originalCountHTML;
+      if (paginationWrapper) {
+        paginationWrapper.innerHTML = originalPaginationHTML;
+        paginationWrapper.style.display = '';
+      }
+      if (gridContainer) gridContainer.classList.remove('multi-filter-loading');
+      return;
+    }
+
+    try {
+      const productIds = new Set();
+      const productCards = [];
+      const parser = new DOMParser();
+
+      // Query collections concurrently via section rendering
+      const promises = activeHandles.map(handle => 
+        fetch(`/collections/${handle}?section_id=${sectionId}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Network error loading collection');
+            return res.text();
+          })
+      );
+
+      const htmls = await Promise.all(promises);
+
+      htmls.forEach(html => {
+        const doc = parser.parseFromString(html, 'text/html');
+        const cards = doc.querySelectorAll('#product-grid > li.grid__item');
+        
+        cards.forEach(card => {
+          const cardInner = card.querySelector('.card--enhanced');
+          const prodId = cardInner ? cardInner.dataset.productId : null;
+          
+          if (prodId) {
+            if (!productIds.has(prodId)) {
+              productIds.add(prodId);
+              productCards.push(card);
+            }
+          }
+        });
+      });
+
+      if (grid) {
+        grid.innerHTML = '';
+        if (productCards.length === 0) {
+          grid.innerHTML = `<div class="collection collection--empty page-width">
+            <div class="title-wrapper center">
+              <h2 class="title title--primary" style="font-size: 14px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;">
+                No items match the selected collections.
+              </h2>
+            </div>
+          </div>`;
+        } else {
+          productCards.forEach((card, idx) => {
+            card.style.setProperty('--animation-order', idx + 1);
+            grid.appendChild(card);
+          });
+        }
+      }
+
+      if (paginationWrapper) {
+        paginationWrapper.style.display = 'none';
+      }
+
+      if (productCountDesktop) {
+        productCountDesktop.textContent = `${productCards.length} Items Selected`;
+      }
+
+      if (sortBySelect) {
+        sortMergedProducts(sortBySelect.value);
+      }
+
+    } catch (error) {
+      console.error('[Multi-Collection Filter] Error updating grid:', error);
+    } finally {
+      if (gridContainer) gridContainer.classList.remove('multi-filter-loading');
+    }
+  }
+
+  function sortMergedProducts(sortBy) {
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('li.grid__item'));
+    if (cards.length === 0) return;
+
+    cards.sort((a, b) => {
+      const getPrice = (el) => {
+        const priceEl = el.querySelector('.price--current');
+        if (!priceEl) return 0;
+        return parseFloat(priceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.'));
+      };
+
+      const getTitle = (el) => {
+        const titleEl = el.querySelector('.card__title a');
+        return titleEl ? titleEl.textContent.trim().toLowerCase() : '';
+      };
+
+      const getIndex = (el) => {
+        return parseInt(el.style.getPropertyValue('--animation-order') || '0');
+      };
+
+      switch (sortBy) {
+        case 'price-ascending':
+          return getPrice(a) - getPrice(b);
+        case 'price-descending':
+          return getPrice(b) - getPrice(a);
+        case 'title-ascending':
+          return getTitle(a).localeCompare(getTitle(b));
+        case 'title-descending':
+          return getTitle(b).localeCompare(getTitle(a));
+        default:
+          return getIndex(a) - getIndex(b);
+      }
+    });
+
+    cards.forEach((card, idx) => {
+      card.style.setProperty('--animation-order', idx + 1);
+      grid.appendChild(card);
+    });
+  }
+});
+</script>
+
 {% schema %}
 {
   "name": "t:sections.main-collection-product-grid.name",
   "class": "section",
   "settings": [
+    {
+      "type": "collection_list",
+      "id": "filter_collections",
+      "label": "Filter Collections List",
+      "info": "Display these selected collections as premium checkboxes in the filters sidebar."
+    },
     {
       "type": "range",
       "id": "products_per_page",
