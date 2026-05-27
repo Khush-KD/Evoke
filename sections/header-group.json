@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "name": "t:sections.header.name",
   "type": "header",
@@ -5,32 +14,108 @@
     "announcement-bar": {
       "type": "announcement-bar",
       "blocks": {
+        "announcement_4dDpxP": {
+          "type": "announcement",
+          "settings": {
+            "text": "Quality you can trust",
+            "link": "",
+            "font_size": "1.3rem",
+            "font_weight": "400",
+            "letter_spacing": "normal",
+            "text_transform": "uppercase"
+          }
+        },
+        "announcement_B6NYQV": {
+          "type": "announcement",
+          "settings": {
+            "text": "Limited stock available",
+            "link": "",
+            "font_size": "1.3rem",
+            "font_weight": "400",
+            "letter_spacing": "normal",
+            "text_transform": "uppercase"
+          }
+        },
         "announcement-bar-0": {
           "type": "announcement",
           "settings": {
-            "text": "Welcome to our store",
-            "text_alignment": "center",
-            "color_scheme": "scheme-1",
-            "link": ""
+            "text": "Get 10% off your first order",
+            "link": "",
+            "font_size": "1.3rem",
+            "font_weight": "400",
+            "letter_spacing": "normal",
+            "text_transform": "uppercase"
+          }
+        },
+        "announcement_phPW8W": {
+          "type": "announcement",
+          "settings": {
+            "text": "Enjoy free delivery on all orders above $150",
+            "link": "",
+            "font_size": "1.3rem",
+            "font_weight": "400",
+            "letter_spacing": "normal",
+            "text_transform": "uppercase"
           }
         }
       },
       "block_order": [
-        "announcement-bar-0"
-      ]
+        "announcement_4dDpxP",
+        "announcement_B6NYQV",
+        "announcement-bar-0",
+        "announcement_phPW8W"
+      ],
+      "settings": {
+        "section_width": "page",
+        "bar_padding": 0,
+        "color_scheme": "",
+        "show_line_separator": true,
+        "auto_rotate": true,
+        "change_slides_speed": 5,
+        "show_social": true,
+        "show_slider_buttons": true,
+        "enable_country_selector": false,
+        "enable_language_selector": false
+      }
     },
     "header": {
       "type": "header",
       "settings": {
-        "color_scheme": "scheme-1",
-        "logo_position": "middle-left",
+        "logo_position": "middle-center",
+        "mobile_logo_position": "center",
+        "header_height_desktop": 48,
+        "header_height_mobile": 48,
         "menu": "main-menu",
         "menu_type_desktop": "dropdown",
+        "mobile_nav_style": "drawer",
         "sticky_header_type": "on-scroll-up",
+        "enable_transparent_header": true,
+        "transparent_header_homepage_only": true,
+        "transparent_header_text_color": "#ffffff",
+        "transparent_header_icon_color": "#ffffff",
+        "scrolled_header_text_color": "#121212",
+        "scrolled_header_icon_color": "#121212",
+        "enable_solid_color_on_scroll": true,
+        "scroll_header_bg_color": "#ffffff",
+        "enable_glassmorphism": false,
         "show_line_separator": true,
-        "enable_country_selector": true,
+        "show_border_on_scroll": false,
+        "color_scheme": "scheme-1",
+        "menu_color_scheme": "",
+        "header_bg_color": "",
+        "header_text_color": "",
+        "header_hover_color": "#000000",
+        "header_border_color": "#e5e5e5",
+        "header_border_thickness": 1,
+        "enable_hover_underline": true,
+        "search_style": "modal",
+        "show_wishlist_icon": false,
+        "enable_mini_cart": false,
+        "enable_account_dropdown": false,
+        "enable_country_selector": false,
         "enable_language_selector": true,
-        "mobile_logo_position": "center",
+        "enable_customer_avatar": true,
+        "enable_mobile_bottom_nav": false,
         "margin_bottom": 0,
         "padding_top": 20,
         "padding_bottom": 20
